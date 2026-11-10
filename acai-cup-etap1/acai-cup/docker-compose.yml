@@ -1,0 +1,51 @@
+# Lokalne środowisko (zadanie 10, DevOps).
+# Start:   docker compose up -d
+# Aplikacja:   http://localhost:8080
+# phpMyAdmin:  http://localhost:8081  (login: acai_app / acai_local)
+# Reset bazy (ponowny import schema.sql i seed.sql):
+#          docker compose down -v && docker compose up -d
+
+services:
+  app:
+    build: ./docker/php
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/acai-cup
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: acai_cup
+      DB_USER: acai_app
+      DB_PASS: acai_local      # hasło TYLKO lokalne, na serwerze inne
+      APP_DEBUG: "true"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: acai_cup
+      MYSQL_USER: acai_app
+      MYSQL_PASSWORD: acai_local
+      MYSQL_ROOT_PASSWORD: root_local
+    volumes:
+      # Pliki .sql z tego katalogu wykonują się alfabetycznie przy PIERWSZYM
+      # starcie bazy: schema.sql, potem seed.sql.
+      - ./database:/docker-entrypoint-initdb.d:ro
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+volumes:
+  db_data:

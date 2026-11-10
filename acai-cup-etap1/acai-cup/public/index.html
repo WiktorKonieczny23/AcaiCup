@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Acai Cup – skomponuj swój kubek</title>
+    <meta name="description" content="Skomponuj acai cup: wybierz rozmiar, warstwy, toppingi i dodatkowe białko. Cena i wartości odżywcze na bieżąco.">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
+    <link rel="stylesheet" href="assets/css/style.css?v=2026-11-10">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container d-flex align-items-center justify-content-between py-3">
+        <a class="brand" href="./">
+            <span class="brand-mark" aria-hidden="true"></span>
+            Acai Cup
+        </a>
+        <span id="data-source" class="badge rounded-pill text-bg-light" hidden title="Dane z pliku testowego zamiast z bazy">dane testowe</span>
+    </div>
+</header>
+
+<main class="container py-4 py-lg-5">
+    <div id="load-error" class="alert alert-danger" role="alert" hidden></div>
+
+    <div class="row g-4 g-lg-5">
+        <!-- Lewa kolumna: wizualizacja i podsumowanie na żywo -->
+        <aside class="col-lg-5">
+            <div class="preview-card sticky-lg-top">
+                <div class="cup-wrap">
+                    <svg id="cup" viewBox="0 0 240 300" role="img" aria-labelledby="cup-title">
+                        <title id="cup-title">Podgląd Twojego kubka</title>
+                    </svg>
+                </div>
+
+                <div class="d-flex align-items-baseline justify-content-between mt-3">
+                    <span class="text-secondary">Cena</span>
+                    <strong id="price" class="price">–</strong>
+                </div>
+
+                <dl class="nutrition" aria-live="polite">
+                    <div><dt>kcal</dt><dd id="n-kcal">0</dd></div>
+                    <div><dt>białko</dt><dd id="n-protein">0 g</dd></div>
+                    <div><dt>węglowodany</dt><dd id="n-carbs">0 g</dd></div>
+                    <div><dt>tłuszcz</dt><dd id="n-fat">0 g</dd></div>
+                </dl>
+
+                <div class="mt-3">
+                    <div class="small text-secondary mb-1">Alergeny</div>
+                    <div id="allergens" class="d-flex flex-wrap gap-1" aria-live="polite">
+                        <span class="text-secondary small">brak</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Prawa kolumna: kroki konfiguratora -->
+        <section class="col-lg-7" aria-labelledby="step-title">
+            <nav aria-label="Kroki konfiguratora">
+                <ol id="stepper" class="stepper"></ol>
+            </nav>
+
+            <h1 id="step-title" class="step-title"></h1>
+            <p id="step-hint" class="text-secondary"></p>
+
+            <div id="step-body" class="mb-4"></div>
+
+            <div class="d-flex justify-content-between gap-2">
+                <button id="btn-back" type="button" class="btn btn-outline-secondary">Wstecz</button>
+                <button id="btn-next" type="button" class="btn btn-acai">Dalej</button>
+            </div>
+            <p id="step-error" class="text-danger small mt-2" role="alert"></p>
+        </section>
+    </div>
+</main>
+
+<!-- Pasek na telefonie: cena i kcal zawsze widoczne podczas wybierania -->
+<div class="mobile-bar" aria-hidden="true">
+    <span><strong id="m-price">–</strong></span>
+    <span id="m-kcal">0 kcal</span>
+</div>
+
+<footer class="container pb-4 small text-secondary">
+    <p class="mb-2">Projekt zaliczeniowy · Programowanie serwisów internetowych · 2026/2027</p>
+    <details id="credits" class="credits" hidden>
+        <summary>Autorzy zdjęć (Unsplash, Pexels)</summary>
+        <ul id="credits-list"></ul>
+    </details>
+</footer>
+
+<script type="module" src="assets/js/app.js?v=2026-11-10"></script>
+</body>
+</html>

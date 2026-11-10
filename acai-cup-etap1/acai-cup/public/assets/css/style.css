@@ -1,0 +1,436 @@
+/* =====================================================================
+   Acai Cup – style (zadanie 14, FE). Opis zasad: docs/styl.md
+   Styl bazowy: „Wise” z styles.refero.design – głęboka zieleń liści,
+   jeden limonkowy akcent, ciężkie nagłówki, przyciski-pigułki.
+   Wybrany przez zespół 03.11.2026.
+   ===================================================================== */
+
+:root {
+    /* Kolory marki */
+    --forest:   #163300;   /* Forest Ink – tekst marki, ciemne sekcje, obramowania wyboru */
+    --spruce:   #054d28;   /* Spruce – tło kubka w ciemnej sekcji */
+    --obsidian: #0e0f0c;   /* nagłówki */
+    --lime:     #9fe870;   /* Lime Voltage – przycisk główny i aktywny krok (oszczędnie!) */
+    --lime-hover: #8fd960;
+    --mist:     #e2f6d5;   /* Linen Mist – tło zaznaczenia, plakietki */
+
+    /* Neutralne */
+    --text:     #454745;   /* Charcoal – tekst główny */
+    --muted:    #6a6c6a;   /* Slate – tekst pomocniczy */
+    --fog:      #e8ebe6;   /* Fog – ramki, kafelki */
+    --paper:    #ffffff;   /* tło strony i kart */
+
+    /* Kolory na ciemnej sekcji (podgląd kubka) */
+    --on-dark:       #ffffff;
+    --on-dark-muted: #b9d9b0;
+    --cup-inside:    #0f3d1f;
+
+    /* Kształty */
+    --radius:      10px;   /* karty, pola */
+    --radius-lg:   28px;   /* duża ciemna karta */
+    --radius-pill: 9999px; /* przyciski, plakietki, kroki */
+
+    /* Typografia: Inter 900 w nagłówkach, 400–700 w reszcie */
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    --bs-body-font-family: var(--font);
+    --bs-body-color: var(--text);
+    --bs-body-bg: var(--paper);
+    --bs-secondary-color: var(--muted);
+    --bs-secondary-rgb: 106, 108, 106;
+}
+
+body {
+    background: var(--paper);
+    color: var(--text);
+}
+
+/* Margines boczny min. 16 px, także obok wcięć ekranu w telefonach. */
+.container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+h1, h2, .brand, .price {
+    font-family: var(--font);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--obsidian);
+}
+
+/* Nagłówek ------------------------------------------------------------ */
+.site-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--fog);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.45rem;
+    color: var(--forest);
+    text-decoration: none;
+}
+
+.brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: inset 0 0 0 6px var(--forest);
+}
+
+/* Podgląd kubka – ciemna sekcja Forest Ink ------------------------------ */
+.preview-card {
+    top: 1.5rem;
+    background: var(--forest);
+    color: var(--on-dark);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.preview-card .text-secondary {
+    color: var(--on-dark-muted) !important;
+}
+
+.cup-wrap {
+    background: var(--spruce);
+    border-radius: 20px;
+    padding: 0.75rem;
+}
+
+#cup {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.cup-inside        { fill: var(--cup-inside); }
+.cup-outline       { fill: none; stroke: var(--mist); stroke-width: 2.5; stroke-linejoin: round; }
+.cup-rim           { fill: var(--forest); stroke: var(--mist); stroke-width: 2.5; }
+.cup-shine         { stroke: #ffffff; stroke-width: 5; stroke-linecap: round; opacity: 0.3; }
+.cup-shadow        { fill: #000000; opacity: 0.25; }
+.cup-layer         { stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.5; }
+.cup-layer-empty   { fill: var(--cup-inside); stroke: #5c8a5f; stroke-width: 1.2; stroke-dasharray: 5 4; }
+.cup-label-pill    { fill: var(--forest); fill-opacity: 0.82; }
+.cup-label-text    { fill: #ffffff; font-weight: 600; }
+.cup-mound         { stroke: rgba(255, 255, 255, 0.6); stroke-width: 1.5; }
+.cup-mound-split   { stroke: rgba(255, 255, 255, 0.7); stroke-width: 1.5; }
+.cup-slot-label    { font-size: 11px; fill: var(--on-dark-muted); }
+.cup-empty-label   { font-size: 13px; fill: var(--on-dark-muted); }
+.protein-badge circle    { fill: var(--lime); }
+.protein-badge text      { fill: var(--forest); font-weight: 700; }
+.protein-badge-big       { font-size: 13px; }
+.protein-badge-small     { font-size: 9.5px; }
+
+.preview-card .price {
+    font-size: 2.4rem;
+    color: var(--on-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.nutrition {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+}
+
+.nutrition div {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.nutrition dt {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--on-dark-muted);
+}
+
+.nutrition dd {
+    margin: 0;
+    font-weight: 700;
+    color: var(--on-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.badge.allergen {
+    background: var(--mist);
+    color: var(--forest);
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+}
+
+/* Kroki ---------------------------------------------------------------- */
+.stepper {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    flex-wrap: wrap;
+}
+
+.stepper-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--fog);
+    background: var(--paper);
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem 0.3rem 0.35rem;
+    color: var(--forest);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stepper-btn:disabled {
+    opacity: 0.45;
+}
+
+.stepper-num {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--fog);
+    font-size: 0.85rem;
+}
+
+.is-current .stepper-btn {
+    background: var(--lime);
+    border-color: var(--lime);
+}
+
+.is-current .stepper-num {
+    background: var(--forest);
+    color: var(--lime);
+}
+
+.is-done .stepper-num {
+    background: var(--forest);
+    color: #ffffff;
+}
+
+.step-title {
+    font-size: 3rem;
+    line-height: 0.95;
+    margin-bottom: 0.5rem;
+    text-wrap: balance;
+}
+
+.step-title:focus {
+    outline: none;
+}
+
+/* Karty wyboru ----------------------------------------------------------- */
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.option-grid-2 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.option-grid-3 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+
+.option-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+    text-align: left;
+    background: var(--paper);
+    border: 1px solid var(--fog);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.option-card:hover:not(:disabled) {
+    border-color: var(--forest);
+}
+
+.option-card:focus-visible {
+    outline: 3px solid var(--forest);
+    outline-offset: 2px;
+}
+
+.option-card.is-selected {
+    border-color: var(--forest);
+    background: var(--mist);
+    box-shadow: inset 0 0 0 1px var(--forest);
+}
+
+.option-card:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Miniatura zdjęcia składnika (kolor jako tło zapasowe) */
+.swatch {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-size: cover;
+    background-position: center;
+}
+
+/* Zdjęcie główne w pierwszym kroku */
+.hero-photo {
+    margin: 0 0 1rem;
+}
+
+.hero-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 520;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background: var(--mist);
+}
+
+/* Autorzy zdjęć w stopce */
+.credits summary {
+    cursor: pointer;
+    color: var(--forest);
+    font-weight: 600;
+}
+
+.credits ul {
+    columns: 2 16rem;
+    padding-left: 1.1rem;
+    margin: 0.5rem 0 0;
+}
+
+.credits a {
+    color: var(--forest);
+}
+
+.option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.option-title { font-weight: 700; color: var(--forest); }
+.option-meta  { font-size: 0.85rem; color: var(--muted); }
+.option-extra { font-size: 0.78rem; color: var(--muted); }
+
+.layer-group {
+    margin-bottom: 1.5rem;
+}
+
+.layer-group legend {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 0.6rem;
+}
+
+/* Podsumowanie ---------------------------------------------------------- */
+.summary-list {
+    background: var(--paper);
+    border: 1px solid var(--fog);
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    margin: 0;
+}
+
+.summary-list div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--fog);
+}
+
+.summary-list div:last-child { border-bottom: 0; }
+.summary-list dt { font-weight: 400; color: var(--muted); }
+.summary-list dd { margin: 0; text-align: right; font-weight: 600; color: var(--forest); }
+
+/* Przyciski: jeden limonkowy na ekran, reszta obrysowana ---------------- */
+.btn-acai {
+    --bs-btn-bg: var(--lime);
+    --bs-btn-border-color: var(--lime);
+    --bs-btn-color: var(--forest);
+    --bs-btn-hover-bg: var(--lime-hover);
+    --bs-btn-hover-border-color: var(--lime-hover);
+    --bs-btn-hover-color: var(--forest);
+    --bs-btn-active-bg: var(--lime-hover);
+    --bs-btn-active-color: var(--forest);
+    --bs-btn-disabled-bg: var(--fog);
+    --bs-btn-disabled-border-color: var(--fog);
+    --bs-btn-disabled-color: var(--muted);
+    border-radius: var(--radius-pill);
+    padding: 0.6rem 1.8rem;
+    font-weight: 600;
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--forest);
+    --bs-btn-border-color: var(--forest);
+    --bs-btn-hover-bg: var(--mist);
+    --bs-btn-hover-color: var(--forest);
+    --bs-btn-hover-border-color: var(--forest);
+    --bs-btn-active-bg: var(--mist);
+    --bs-btn-active-color: var(--forest);
+    --bs-btn-disabled-color: var(--muted);
+    --bs-btn-disabled-border-color: var(--fog);
+    border-radius: var(--radius-pill);
+    padding: 0.6rem 1.5rem;
+}
+
+/* Telefon i tablet ------------------------------------------------------ */
+.mobile-bar {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .mobile-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+        background: var(--forest);
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .mobile-bar strong {
+        font-weight: 900;
+        font-size: 1.25rem;
+        letter-spacing: -0.03em;
+        color: var(--lime);
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .step-title { font-size: 2.2rem; }
+    .nutrition { grid-template-columns: repeat(2, 1fr); }
+    .option-grid { grid-template-columns: 1fr; }
+    .preview-card { padding: 1rem; border-radius: 20px; }
+    .preview-card .price { font-size: 2rem; }
+    #cup { max-width: 220px; }
+    .swatch { width: 3rem; height: 3rem; }
+    .hero-photo img { border-radius: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .option-card { transition: none; }
+}
