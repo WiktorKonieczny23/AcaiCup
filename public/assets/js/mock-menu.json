@@ -1,0 +1,536 @@
+{
+    "ok": true,
+    "data": {
+        "currency": "PLN",
+        "sizes": [
+            {
+                "code": "S",
+                "name": "Mały",
+                "layers": 2,
+                "toppings": 1,
+                "price": 19.0
+            },
+            {
+                "code": "M",
+                "name": "Średni",
+                "layers": 3,
+                "toppings": 1,
+                "price": 24.0
+            },
+            {
+                "code": "L",
+                "name": "Duży",
+                "layers": 4,
+                "toppings": 2,
+                "price": 29.0
+            }
+        ],
+        "layers": [
+            {
+                "position": 1,
+                "category_id": 1,
+                "name": "Baza acai",
+                "products": [
+                    {
+                        "id": 3,
+                        "name": "Acai bez cukru",
+                        "color": "#3E1447",
+                        "portion_g": 150,
+                        "kcal": 105.0,
+                        "protein_g": 2.0,
+                        "carbs_g": 9.0,
+                        "fat_g": 7.5,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/acai-bez-cukru.jpg",
+                            "author": null,
+                            "source": null
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 1,
+                        "name": "Acai klasyczne z bananem",
+                        "color": "#4B1A55",
+                        "portion_g": 150,
+                        "kcal": 135.0,
+                        "protein_g": 2.0,
+                        "carbs_g": 22.0,
+                        "fat_g": 5.0,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/acai-z-bananem.jpg",
+                            "author": null,
+                            "source": null
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 4,
+                        "name": "Acai kokosowe",
+                        "color": "#6A2C6E",
+                        "portion_g": 150,
+                        "kcal": 170.0,
+                        "protein_g": 1.8,
+                        "carbs_g": 20.0,
+                        "fat_g": 9.5,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/acai-kokosowe.jpg",
+                            "author": null,
+                            "source": null
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 2,
+                        "name": "Acai z guaraną",
+                        "color": "#5E2266",
+                        "portion_g": 150,
+                        "kcal": 150.0,
+                        "protein_g": 1.8,
+                        "carbs_g": 26.0,
+                        "fat_g": 4.8,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/acai-z-guarana.jpg",
+                            "author": null,
+                            "source": null
+                        },
+                        "available": true
+                    }
+                ]
+            },
+            {
+                "position": 2,
+                "category_id": 2,
+                "name": "Zboża i granola",
+                "products": [
+                    {
+                        "id": 7,
+                        "name": "Granola bezglutenowa",
+                        "color": "#D2A862",
+                        "portion_g": 40,
+                        "kcal": 175.0,
+                        "protein_g": 3.6,
+                        "carbs_g": 27.0,
+                        "fat_g": 6.0,
+                        "allergens": [],
+                        "image": {
+                            "url": "https://images.pexels.com/photos/6086854/pexels-photo-6086854.jpeg",
+                            "author": "Eva Bronzini",
+                            "source": "https://www.pexels.com/photo/6086854/"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 5,
+                        "name": "Granola klasyczna",
+                        "color": "#C9974B",
+                        "portion_g": 40,
+                        "kcal": 180.0,
+                        "protein_g": 4.0,
+                        "carbs_g": 26.0,
+                        "fat_g": 6.5,
+                        "allergens": [
+                            "Zboża zawierające gluten"
+                        ],
+                        "image": {
+                            "url": "assets/img/products/granola-klasyczna.jpg",
+                            "author": "Heather Barnes",
+                            "source": "https://unsplash.com/photos/hMGFMk1rT48"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 6,
+                        "name": "Granola orzechowa",
+                        "color": "#B07A3A",
+                        "portion_g": 40,
+                        "kcal": 195.0,
+                        "protein_g": 4.8,
+                        "carbs_g": 22.0,
+                        "fat_g": 9.5,
+                        "allergens": [
+                            "Zboża zawierające gluten",
+                            "Orzechy"
+                        ],
+                        "image": {
+                            "url": "assets/img/products/granola-orzechowa.jpg",
+                            "author": "Abhishek Hajare",
+                            "source": "https://unsplash.com/photos/GiB3TUjWIks"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 9,
+                        "name": "Musli czekoladowe",
+                        "color": "#8A5A3B",
+                        "portion_g": 40,
+                        "kcal": 170.0,
+                        "protein_g": 3.6,
+                        "carbs_g": 27.0,
+                        "fat_g": 5.2,
+                        "allergens": [
+                            "Zboża zawierające gluten",
+                            "Soja",
+                            "Mleko"
+                        ],
+                        "image": {
+                            "url": "assets/img/products/musli-czekoladowe.jpg",
+                            "author": "Lina Osorio",
+                            "source": "https://unsplash.com/photos/sOfsOGSiaXI"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 8,
+                        "name": "Płatki owsiane",
+                        "color": "#E0C58F",
+                        "portion_g": 40,
+                        "kcal": 150.0,
+                        "protein_g": 5.2,
+                        "carbs_g": 24.0,
+                        "fat_g": 2.8,
+                        "allergens": [
+                            "Zboża zawierające gluten"
+                        ],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1722882270575-f437c338a4de",
+                            "author": "Xhiliana",
+                            "source": "https://unsplash.com/photos/ThMhV-RaQ24"
+                        },
+                        "available": true
+                    }
+                ]
+            },
+            {
+                "position": 3,
+                "category_id": 3,
+                "name": "Owoce",
+                "products": [
+                    {
+                        "id": 10,
+                        "name": "Banan",
+                        "color": "#F2D857",
+                        "portion_g": 80,
+                        "kcal": 71.0,
+                        "protein_g": 0.9,
+                        "carbs_g": 18.3,
+                        "fat_g": 0.2,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/banan.jpg",
+                            "author": "Juliane Chatillon",
+                            "source": "https://www.pexels.com/photo/36852876/"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 12,
+                        "name": "Borówki",
+                        "color": "#3E4E9C",
+                        "portion_g": 80,
+                        "kcal": 46.0,
+                        "protein_g": 0.6,
+                        "carbs_g": 11.6,
+                        "fat_g": 0.3,
+                        "allergens": [],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1626433281588-ae724357378d",
+                            "author": "Hanna Balan",
+                            "source": "https://unsplash.com/photos/N0nXYmCW4JA"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 14,
+                        "name": "Kiwi",
+                        "color": "#8DBB3C",
+                        "portion_g": 80,
+                        "kcal": 49.0,
+                        "protein_g": 0.9,
+                        "carbs_g": 11.7,
+                        "fat_g": 0.4,
+                        "allergens": [],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1650261062904-b51482026eac",
+                            "author": "Tom Paolini",
+                            "source": "https://unsplash.com/photos/VCa_6OdVV2w"
+                        },
+                        "available": false
+                    },
+                    {
+                        "id": 13,
+                        "name": "Mango",
+                        "color": "#F4A300",
+                        "portion_g": 80,
+                        "kcal": 48.0,
+                        "protein_g": 0.7,
+                        "carbs_g": 12.0,
+                        "fat_g": 0.3,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/mango.jpg",
+                            "author": "Fedor",
+                            "source": "https://unsplash.com/photos/BRiT_s3tN6Y"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 11,
+                        "name": "Truskawki",
+                        "color": "#E2384D",
+                        "portion_g": 80,
+                        "kcal": 26.0,
+                        "protein_g": 0.5,
+                        "carbs_g": 6.1,
+                        "fat_g": 0.2,
+                        "allergens": [],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1594282241894-4da286138f44",
+                            "author": "Natasha Skov",
+                            "source": "https://unsplash.com/photos/VyRmCBnDj5g"
+                        },
+                        "available": true
+                    }
+                ]
+            },
+            {
+                "position": 4,
+                "category_id": 4,
+                "name": "Krem",
+                "products": [
+                    {
+                        "id": 17,
+                        "name": "Jogurt grecki",
+                        "color": "#F4F1EA",
+                        "portion_g": 50,
+                        "kcal": 60.0,
+                        "protein_g": 3.0,
+                        "carbs_g": 2.0,
+                        "fat_g": 5.0,
+                        "allergens": [
+                            "Mleko"
+                        ],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1728994062543-74a1dc2c9392",
+                            "author": "360floralflaves",
+                            "source": "https://unsplash.com/photos/j9gn__IqJN4"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 19,
+                        "name": "Krem kakaowo-orzechowy",
+                        "color": "#5A3420",
+                        "portion_g": 20,
+                        "kcal": 108.0,
+                        "protein_g": 1.3,
+                        "carbs_g": 11.5,
+                        "fat_g": 6.2,
+                        "allergens": [
+                            "Soja",
+                            "Mleko",
+                            "Orzechy"
+                        ],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1676817167465-38a0fe938c53",
+                            "author": "bader photographer",
+                            "source": "https://unsplash.com/photos/OLwCpJmzJOA"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 16,
+                        "name": "Krem kokosowy",
+                        "color": "#EFE7D6",
+                        "portion_g": 30,
+                        "kcal": 99.0,
+                        "protein_g": 1.0,
+                        "carbs_g": 2.0,
+                        "fat_g": 10.4,
+                        "allergens": [],
+                        "image": {
+                            "url": "assets/img/products/krem-kokosowy.jpg",
+                            "author": "DS stories",
+                            "source": "https://www.pexels.com/photo/9227965/"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 18,
+                        "name": "Krem pistacjowy",
+                        "color": "#93B04A",
+                        "portion_g": 20,
+                        "kcal": 115.0,
+                        "protein_g": 2.6,
+                        "carbs_g": 7.0,
+                        "fat_g": 8.6,
+                        "allergens": [
+                            "Mleko",
+                            "Orzechy"
+                        ],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1653750660402-d009795394b2",
+                            "author": "NIKHIL",
+                            "source": "https://unsplash.com/photos/eaN_2b0-o88"
+                        },
+                        "available": true
+                    },
+                    {
+                        "id": 15,
+                        "name": "Masło orzechowe",
+                        "color": "#A86B32",
+                        "portion_g": 20,
+                        "kcal": 118.0,
+                        "protein_g": 5.0,
+                        "carbs_g": 4.0,
+                        "fat_g": 10.0,
+                        "allergens": [
+                            "Orzeszki ziemne"
+                        ],
+                        "image": {
+                            "url": "https://images.unsplash.com/photo-1729673520849-263dbc8e0fc3",
+                            "author": "Olivie Strauss",
+                            "source": "https://unsplash.com/photos/a_4gTRTG_Ws"
+                        },
+                        "available": true
+                    }
+                ]
+            }
+        ],
+        "toppings": {
+            "category_id": 5,
+            "name": "Toppingi",
+            "products": [
+                {
+                    "id": 23,
+                    "name": "Gorzka czekolada",
+                    "color": "#3B2418",
+                    "portion_g": 10,
+                    "kcal": 58.0,
+                    "protein_g": 0.8,
+                    "carbs_g": 4.6,
+                    "fat_g": 4.3,
+                    "allergens": [
+                        "Soja",
+                        "Mleko"
+                    ],
+                    "image": {
+                        "url": "assets/img/products/gorzka-czekolada.jpg",
+                        "author": "Rita Patrese",
+                        "source": "https://unsplash.com/photos/njXuDXO5Qd8"
+                    },
+                    "available": true
+                },
+                {
+                    "id": 25,
+                    "name": "Liofilizowane maliny",
+                    "color": "#D23F62",
+                    "portion_g": 3,
+                    "kcal": 11.0,
+                    "protein_g": 0.3,
+                    "carbs_g": 2.2,
+                    "fat_g": 0.1,
+                    "allergens": [],
+                    "image": {
+                        "url": "https://images.unsplash.com/photo-1609622511068-70c39f3c2253",
+                        "author": "Ulyana Grishina",
+                        "source": "https://unsplash.com/photos/aAKjE83oKqs"
+                    },
+                    "available": true
+                },
+                {
+                    "id": 21,
+                    "name": "Miód",
+                    "color": "#E8A93A",
+                    "portion_g": 10,
+                    "kcal": 30.0,
+                    "protein_g": 0.0,
+                    "carbs_g": 8.2,
+                    "fat_g": 0.0,
+                    "allergens": [],
+                    "image": {
+                        "url": "https://images.unsplash.com/photo-1623018697148-8350cf18e64e",
+                        "author": "Jonas Hensel",
+                        "source": "https://unsplash.com/photos/3Cpws7ibtfo"
+                    },
+                    "available": true
+                },
+                {
+                    "id": 22,
+                    "name": "Nasiona chia",
+                    "color": "#4A4A48",
+                    "portion_g": 5,
+                    "kcal": 24.0,
+                    "protein_g": 0.8,
+                    "carbs_g": 2.1,
+                    "fat_g": 1.5,
+                    "allergens": [],
+                    "image": {
+                        "url": "https://images.unsplash.com/photo-1502825926876-e8819fbb2fd0",
+                        "author": "Joanna Kosinska",
+                        "source": "https://unsplash.com/photos/6MlhT-THmk4"
+                    },
+                    "available": true
+                },
+                {
+                    "id": 24,
+                    "name": "Płatki migdałów",
+                    "color": "#E4C9A0",
+                    "portion_g": 8,
+                    "kcal": 46.0,
+                    "protein_g": 1.7,
+                    "carbs_g": 1.7,
+                    "fat_g": 4.0,
+                    "allergens": [
+                        "Orzechy"
+                    ],
+                    "image": {
+                        "url": "https://images.pexels.com/photos/6086888/pexels-photo-6086888.jpeg",
+                        "author": "Eva Bronzini",
+                        "source": "https://www.pexels.com/photo/6086888/"
+                    },
+                    "available": true
+                },
+                {
+                    "id": 20,
+                    "name": "Wiórki kokosowe",
+                    "color": "#F5F1E6",
+                    "portion_g": 5,
+                    "kcal": 33.0,
+                    "protein_g": 0.3,
+                    "carbs_g": 0.3,
+                    "fat_g": 3.2,
+                    "allergens": [],
+                    "image": {
+                        "url": "https://images.pexels.com/photos/7717792/pexels-photo-7717792.jpeg",
+                        "author": "Marina Leonova",
+                        "source": "https://www.pexels.com/photo/7717792/"
+                    },
+                    "available": true
+                }
+            ]
+        },
+        "extra_protein": {
+            "id": 1,
+            "name": "Białko serwatkowe",
+            "price": 4.0,
+            "portion_g": 20,
+            "kcal": 78.0,
+            "protein_g": 15.0,
+            "carbs_g": 1.5,
+            "fat_g": 1.2,
+            "allergens": [
+                "Mleko"
+            ],
+            "image": {
+                "url": "assets/img/products/bialko-serwatkowe.jpg",
+                "author": "HowToGym",
+                "source": "https://unsplash.com/photos/S9NchuPb79I"
+            },
+            "available": true
+        }
+    }
+}

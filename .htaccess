@@ -1,0 +1,9 @@
+# Ochrona katalogu projektu na XAMPP (etap E4, DevOps).
+#
+# Na serwerze document root wskazuje na public/, więc reszta projektu
+# (src/, config/, database/, logs/) w ogóle nie jest widoczna z internetu.
+# W XAMPP cały projekt leży w htdocs – bez tego pliku dało się otworzyć np.
+# http://localhost/ACAI/logs/app.log albo database/seed.sql (hashe haseł).
+# Blokujemy więc wszystko, a public/.htaccess z powrotem wpuszcza ruch do public/.
+
+Require all denied

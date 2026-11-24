@@ -1,0 +1,15 @@
+# Prawdziwa konfiguracja z hasłami – NIGDY do repozytorium
+config/config.php
+.env
+
+# Logi i kopie zapasowe
+logs/
+*.log
+backups/
+*.sql.gz
+
+# Systemowe i edytory
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

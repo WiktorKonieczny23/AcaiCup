@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zdjęcia składników – Acai Cup</title>
+<style>
+  /* Galeria propozycji zdjęć: duży kadr tekstury (tak jak wypełni warstwę kubka) + całe zdjęcie + źródło */
+  :root {
+    --forest: #163300; --mist: #e2f6d5; --lime: #9fe870; --text: #454745; --muted: #6a6c6a;
+    --fog: #e8ebe6; --paper: #ffffff; --warn-bg: #fff4d6; --warn: #7a5200;
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--text); font: 15px/1.5 var(--font); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-weight: 900; letter-spacing: -0.04em; color: #0e0f0c; font-size: 2.6rem; line-height: 1; margin: 0 0 12px; }
+  h2 { font-weight: 900; letter-spacing: -0.03em; color: var(--forest); font-size: 1.5rem; margin: 40px 0 14px; }
+  .lead { max-width: 68ch; margin: 0 0 8px; }
+  .lead strong { color: var(--forest); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--fog); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .card.flag { border-color: #e9c46a; }
+  .tex { aspect-ratio: 16 / 7; background: var(--fog) center / cover no-repeat; }
+  .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .row { display: flex; gap: 12px; align-items: flex-start; }
+  .thumb { width: 84px; height: 84px; flex: none; border-radius: 8px; object-fit: contain; background: var(--fog); }
+  .name { font-weight: 700; color: var(--forest); margin: 0; font-size: 1rem; }
+  .meta { font-size: 0.82rem; color: var(--muted); margin: 0; }
+  .meta a { color: var(--forest); }
+  .note { font-size: 0.82rem; background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 6px 10px; margin: 0; }
+  .ok { font-size: 0.78rem; font-weight: 600; color: var(--forest); background: var(--mist); border-radius: 999px; padding: 2px 10px; align-self: flex-start; }
+  .missing .tex { display: grid; place-items: center; color: var(--muted); font-weight: 600; background: repeating-linear-gradient(45deg, var(--fog) 0 10px, #f3f5f2 10px 20px); }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .hero img { width: 100%; border-radius: 10px; display: block; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--fog); vertical-align: top; }
+  th { color: var(--forest); }
+  @media (max-width: 640px) { .hero { grid-template-columns: 1fr; } h1 { font-size: 2rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Zdjęcia składników</h1>
+  <p class="lead">Propozycje zdjęć do zastąpienia kolorów w kubku. Wszystkie pochodzą z <strong>Unsplash</strong> lub <strong>Pexels</strong>, czyli z darmowych licencji, które pozwalają użyć zdjęcia w projekcie bez pytania autora o zgodę. Wybierałem ujęcia z góry, na których składnik wypełnia kadr, jak w przesłanym przykładzie z granolą.</p>
+  <p class="lead">Duży pasek na górze karty pokazuje wycinek, którym wypełni się warstwa kubka. Pod nim jest całe zdjęcie. <strong>Żółte ramki</strong> oznaczają kompromis, który warto zastąpić własnym zdjęciem.</p>
+  <p class="lead" style="color:var(--muted);font-size:.85rem">Stan na 03.11.2026. Galeria wczytuje zdjęcia z serwerów Unsplash i Pexels, więc potrzebuje internetu.</p>
+
+  <div id="sections"></div>
+
+  <h2>Licencje w skrócie</h2>
+  <table>
+    <tr><th>Serwis</th><th>Co wolno</th><th>Czego nie wolno</th></tr>
+    <tr><td><a href="https://unsplash.com/license">Unsplash License</a></td><td>Używać za darmo, także komercyjnie, kadrować i przerabiać. Podpis autora nie jest wymagany, ale mile widziany.</td><td>Sprzedawać zdjęć bez zmian ani budować z nich konkurencyjnego serwisu ze zdjęciami. Zdjęcia <em>Unsplash+</em> są płatne i zostały pominięte.</td></tr>
+    <tr><td><a href="https://www.pexels.com/license/">Pexels License</a></td><td>Używać za darmo, kadrować i przerabiać. Podpis autora nie jest wymagany.</td><td>Sprzedawać zdjęć bez zmian, sugerować, że osoby na zdjęciu popierają produkt.</td></tr>
+  </table>
+  <p class="meta" style="margin-top:8px">W projekcie zaliczeniowym i tak podpiszcie autorów, np. w stopce albo w README. Kolumny „Autor” i „Źródło” poniżej są do tego gotowe.</p>
+</div>
+
+<script>
+// u() – zdjęcie z Unsplash, p() – z Pexels. Parametry w adresie same kadrują zdjęcie po stronie serwera.
+const u = (img, w, h) => `${img}?w=${w}&h=${h}&fit=crop&crop=entropy&q=70&auto=format`;
+const uFull = img => `${img}?w=300&q=60&auto=format`;
+const p = (img, w, h) => `${img}?auto=compress&cs=tinysrgb&w=${w}&h=${h}&fit=crop`;
+const pFull = img => `${img}?auto=compress&cs=tinysrgb&w=300`;
+
+const SECTIONS = [
+  { title: 'Warstwa 1 · Baza acai', items: [
+    { name: 'Acai klasyczne z bananem', site: 'Unsplash', url: 'https://unsplash.com/photos/43VMTJ1WfsM', img: 'https://images.unsplash.com/photo-1771371000586-33abd2ce9e23', author: 'Jakub Pabis', note: 'Ciemne acai z plastrami banana, prawie z góry. Masa acai wygląda na brązową, nie fioletową.' },
+    { name: 'Acai z guaraną', site: 'Pexels', url: 'https://www.pexels.com/photo/wooden-scoop-on-bowl-1334129/', img: 'https://images.pexels.com/photos/1334129/pexels-photo-1334129.jpeg', author: 'Ella Olsson', note: 'Z góry, czysta masa acai jest tylko w górnej połowie miski. Kadr trzeba będzie przesunąć ręcznie.' },
+    { name: 'Acai bez cukru', site: 'Unsplash', url: 'https://unsplash.com/photos/a-close-up-of-a-bowl-of-food-on-a-table-k2MfxJGSUbQ', img: 'https://images.unsplash.com/photo-1647545401835-c21e6b04d853', author: 'Mikey Frost', note: 'Najładniejsza gładka masa acai, ale zdjęcie jest pod kątem ok. 45°, nie z góry.' },
+    { name: 'Acai kokosowe', site: 'Unsplash', url: 'https://unsplash.com/photos/a-bowl-filled-with-granola-blueberries-and-nuts-W2YM9Dt_1Oo', img: 'https://images.unsplash.com/photo-1641579719214-534970165dc9', author: 'Alexandra Tran', note: 'Z góry, z wiórkami kokosa na wierzchu. Acai widać tylko przy brzegach.' },
+  ]},
+  { title: 'Warstwa 2 · Zboża i granola', items: [
+    { name: 'Granola klasyczna', site: 'Unsplash', url: 'https://unsplash.com/photos/brown-leaves-on-gray-soil-hMGFMk1rT48', img: 'https://images.unsplash.com/photo-1559951585-645e730d3cf0', author: 'Heather Barnes' },
+    { name: 'Granola orzechowa', site: 'Unsplash', url: 'https://unsplash.com/photos/brown-peanuts-in-white-ceramic-bowl-GiB3TUjWIks', img: 'https://images.unsplash.com/photo-1622542086073-dcdc3350cc2b', author: 'Abhishek Hajare' },
+    { name: 'Granola bezglutenowa', site: 'Pexels', url: 'https://www.pexels.com/photo/white-and-brown-stone-fragments-6086854/', img: 'https://images.pexels.com/photos/6086854/pexels-photo-6086854.jpeg', author: 'Eva Bronzini', tip: 'płatki gryczane, naturalnie bez glutenu' },
+    { name: 'Płatki owsiane', site: 'Unsplash', url: 'https://unsplash.com/photos/a-close-up-of-a-pile-of-oats-ThMhV-RaQ24', img: 'https://images.unsplash.com/photo-1722882270575-f437c338a4de', author: 'Xhiliana' },
+    { name: 'Musli czekoladowe', site: 'Unsplash', url: 'https://unsplash.com/photos/brown-food-on-white-ceramic-plate-sOfsOGSiaXI', img: 'https://images.unsplash.com/photo-1618258022300-ac769be6e840', author: 'Lina Osorio', tip: 'miska z góry, kadr środka' },
+  ]},
+  { title: 'Warstwa 3 · Owoce', items: [
+    { name: 'Banan', site: 'Pexels', url: 'https://www.pexels.com/photo/delicious-banana-snacks-on-decorative-plate-36852876/', img: 'https://images.pexels.com/photos/36852876/pexels-photo-36852876.jpeg', author: 'Juliane Chatillon', tip: 'talerz z góry, kadr środka' },
+    { name: 'Truskawki', site: 'Unsplash', url: 'https://unsplash.com/photos/red-strawberries-on-green-leaves-VyRmCBnDj5g', img: 'https://images.unsplash.com/photo-1594282241894-4da286138f44', author: 'Natasha Skov' },
+    { name: 'Borówki', site: 'Unsplash', url: 'https://unsplash.com/photos/blue-berries-on-white-background-N0nXYmCW4JA', img: 'https://images.unsplash.com/photo-1626433281588-ae724357378d', author: 'Hanna Balan' },
+    { name: 'Mango', site: 'Unsplash', url: 'https://unsplash.com/photos/sliced-fruit-on-white-ceramic-bowl-BRiT_s3tN6Y', img: 'https://images.unsplash.com/photo-1582655299221-2b6bff351df0', author: 'Fedor', tip: 'talerz z góry, kadr środka' },
+    { name: 'Kiwi', site: 'Unsplash', url: 'https://unsplash.com/photos/a-bunch-of-kiwi-cut-in-half-on-a-cutting-board-VCa_6OdVV2w', img: 'https://images.unsplash.com/photo-1650261062904-b51482026eac', author: 'Tom Paolini' },
+  ]},
+  { title: 'Warstwa 4 · Krem', items: [
+    { name: 'Masło orzechowe', site: 'Unsplash', url: 'https://unsplash.com/photos/a-close-up-of-a-chocolate-frosted-surface-a_4gTRTG_Ws', img: 'https://images.unsplash.com/photo-1729673520849-263dbc8e0fc3', author: 'Olivie Strauss', note: 'Wygląda jak masło orzechowe, ale autor opisał je jako krem karmelowy.' },
+    { name: 'Krem kokosowy', missing: true, note: 'Brak pasującego darmowego zdjęcia. Białe „kremy” w serwisach to głównie kosmetyki i grafiki 3D. Najprościej zrobić własne: łyżka kremu kokosowego w misce, telefonem z góry, przy oknie.' },
+    { name: 'Jogurt grecki', site: 'Unsplash', url: 'https://unsplash.com/photos/a-close-up-of-a-white-frosted-cake-j9gn__IqJN4', img: 'https://images.unsplash.com/photo-1728994062543-74a1dc2c9392', author: '360floralflaves', tip: 'makro gęstego jogurtu' },
+    { name: 'Krem pistacjowy', site: 'Unsplash', url: 'https://unsplash.com/photos/a-close-up-view-of-a-green-liquid-eaN_2b0-o88', img: 'https://images.unsplash.com/photo-1653750660402-d009795394b2', author: 'NIKHIL', note: 'Wygląda jak krem pistacjowy, ale autor nie opisał, co to za masa.' },
+    { name: 'Krem kakaowo-orzechowy', site: 'Unsplash', url: 'https://unsplash.com/photos/creamy-milk-chocolate-swirls-OLwCpJmzJOA', img: 'https://images.unsplash.com/photo-1676817167465-38a0fe938c53', author: 'bader photographer' },
+  ]},
+  { title: 'Toppingi', items: [
+    { name: 'Wiórki kokosowe', site: 'Pexels', url: 'https://www.pexels.com/photo/close-up-photo-of-white-coconut-shavings-7717792/', img: 'https://images.pexels.com/photos/7717792/pexels-photo-7717792.jpeg', author: 'Marina Leonova' },
+    { name: 'Miód', site: 'Unsplash', url: 'https://unsplash.com/photos/honeycomb-with-golden-liquid-honey-3Cpws7ibtfo', img: 'https://images.unsplash.com/photo-1623018697148-8350cf18e64e', author: 'Jonas Hensel', tip: 'plaster miodu – od razu czytelny' },
+    { name: 'Nasiona chia', site: 'Unsplash', url: 'https://unsplash.com/photos/black-and-gray-pebbles-6MlhT-THmk4', img: 'https://images.unsplash.com/photo-1502825926876-e8819fbb2fd0', author: 'Joanna Kosinska', tip: 'automatyczny opis mówi „kamyki”, ale tagi autora to chia / seeds' },
+    { name: 'Gorzka czekolada', site: 'Unsplash', url: 'https://unsplash.com/photos/brown-dried-leaves-on-white-surface-njXuDXO5Qd8', img: 'https://images.unsplash.com/photo-1585226906833-c76e175379f7', author: 'Rita Patrese', tip: 'wiórki czekolady' },
+    { name: 'Płatki migdałów', site: 'Pexels', url: 'https://www.pexels.com/photo/thin-slices-of-white-nuts-6086888/', img: 'https://images.pexels.com/photos/6086888/pexels-photo-6086888.jpeg', author: 'Eva Bronzini' },
+    { name: 'Liofilizowane maliny', site: 'Unsplash', url: 'https://unsplash.com/photos/a-bunch-of-raspberries-that-are-very-ripe-aAKjE83oKqs', img: 'https://images.unsplash.com/photo-1609622511068-70c39f3c2253', author: 'Ulyana Grishina', note: 'Świeże maliny zamiast liofilizowanych. Darmowych zdjęć liofilizowanych malin nie znalazłem.' },
+  ]},
+  { title: 'Dodatek', items: [
+    { name: 'Białko serwatkowe', site: 'Unsplash', url: 'https://unsplash.com/photos/scoop-with-white-powder-S9NchuPb79I', img: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d', author: 'HowToGym' },
+  ]},
+];
+
+const HERO = { site: 'Unsplash', url: 'https://unsplash.com/photos/a-bowl-of-cereal-with-milk-and-fruit-NI8MeJiAN3I', img: 'https://images.unsplash.com/photo-1654923064926-be7e64267a31', author: 'Eiliv Aceron' };
+
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => k === 'class' ? n.className = v : k === 'style' ? n.style.cssText = v : n.setAttribute(k, v)); kids.flat().forEach(k => k != null && n.append(k instanceof Node ? k : document.createTextNode(k))); return n; };
+const texUrl = it => it.site === 'Unsplash' ? u(it.img, 700, 306) : p(it.img, 700, 306);
+const fullUrl = it => it.site === 'Unsplash' ? uFull(it.img) : pFull(it.img);
+
+const root = document.getElementById('sections');
+
+root.append(el('h2', {}, 'Zdjęcie główne konfiguratora'));
+root.append(el('div', { class: 'hero' },
+  el('img', { src: `${HERO.img}?w=900&q=70&auto=format`, alt: 'Acai bowl z owocami, z góry' }),
+  el('div', {},
+    el('p', { class: 'name' }, 'Acai bowl, ujęcie z góry'),
+    el('p', { class: 'meta' }, 'Autor: ', HERO.author, ' · ', el('a', { href: HERO.url }, 'Unsplash')),
+    el('p', { class: 'meta', style: 'margin-top:8px' }, 'Na start konfiguratora albo jako tło nagłówka. Pokazuje gotowy produkt, zanim klient zacznie wybierać.'))));
+
+let count = 0, flagged = 0;
+for (const s of SECTIONS) {
+  root.append(el('h2', {}, s.title));
+  const g = el('div', { class: 'grid' });
+  for (const it of s.items) {
+    count++;
+    if (it.missing) {
+      flagged++;
+      g.append(el('div', { class: 'card flag missing' }, el('div', { class: 'tex' }, 'brak zdjęcia'),
+        el('div', { class: 'body' }, el('p', { class: 'name' }, it.name), el('p', { class: 'note' }, it.note))));
+      continue;
+    }
+    if (it.note) flagged++;
+    const tex = el('div', { class: 'tex', role: 'img', 'aria-label': `Tekstura: ${it.name}` });
+    tex.style.backgroundImage = `url("${texUrl(it)}")`;
+    g.append(el('div', { class: 'card' + (it.note ? ' flag' : '') }, tex,
+      el('div', { class: 'body' },
+        el('div', { class: 'row' },
+          el('img', { class: 'thumb', src: fullUrl(it), alt: `Całe zdjęcie: ${it.name}`, loading: 'lazy' }),
+          el('div', {},
+            el('p', { class: 'name' }, it.name),
+            el('p', { class: 'meta' }, 'Autor: ', it.author),
+            el('p', { class: 'meta' }, el('a', { href: it.url, target: '_blank', rel: 'noopener' }, `Otwórz na ${it.site}`)),
+            it.tip ? el('p', { class: 'meta' }, it.tip) : null)),
+        it.note ? el('p', { class: 'note' }, it.note) : el('span', { class: 'ok' }, 'z góry, wypełnia kadr'))));
+  }
+  root.append(g);
+}
+root.prepend(el('p', { class: 'lead' }, `${count} składników: ${count - flagged} gotowych, ${flagged} do poprawy.`));
+</script>
+</body>
+</html>

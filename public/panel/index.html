@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Panel personelu – Acai Cup</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
+    <link rel="stylesheet" href="../assets/css/style.css?v=2026-11-24">
+</head>
+<body class="panel-body">
+<!--
+    Panel personelu (zadania 34, 36, 37, 39 – FE).
+    Jedna strona: formularz logowania ALBO panel z zakładkami.
+    Całą treść zakładek buduje assets/js/panel.js na podstawie danych z api/admin/*.
+    Elementy z data-role="manager" są widoczne tylko dla kierownika –
+    ale to tylko wygoda: serwer i tak sprawdza rolę w każdym endpoincie (require_role).
+-->
+
+<header class="site-header">
+    <div class="container d-flex align-items-center justify-content-between gap-3 py-3">
+        <a class="brand" href="./">
+            <span class="brand-mark" aria-hidden="true"></span>
+            Acai Cup <span class="panel-tag">panel</span>
+        </a>
+        <div id="user-box" class="d-flex align-items-center gap-2" hidden>
+            <span class="small text-secondary">
+                <span id="user-login"></span> · rola: <span id="user-role"></span>
+            </span>
+            <button id="btn-logout" type="button" class="btn btn-outline-secondary btn-sm">Wyloguj</button>
+        </div>
+    </div>
+</header>
+
+<main class="container py-4">
+    <p id="panel-message" class="alert" role="status" hidden></p>
+
+    <!-- Logowanie -->
+    <section id="login-view" class="login-card" hidden aria-labelledby="login-title">
+        <h1 id="login-title" class="step-title">Logowanie personelu</h1>
+        <form id="login-form" novalidate>
+            <div class="mb-3">
+                <label for="login" class="form-label">Login</label>
+                <input id="login" name="login" class="form-control" autocomplete="username" maxlength="40" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Hasło</label>
+                <input id="password" name="password" type="password" class="form-control" autocomplete="current-password" maxlength="200" required>
+            </div>
+            <p id="login-error" class="text-danger small" role="alert"></p>
+            <button type="submit" class="btn btn-acai">Zaloguj</button>
+        </form>
+        <p class="small text-secondary mt-4"><a class="footer-link" href="../">← Wróć do konfiguratora</a></p>
+    </section>
+
+    <!-- Panel -->
+    <section id="panel-view" hidden>
+        <nav class="panel-tabs" aria-label="Sekcje panelu">
+            <button type="button" class="panel-tab" data-tab="orders">Zamówienia</button>
+            <button type="button" class="panel-tab" data-tab="products">Produkty</button>
+            <button type="button" class="panel-tab" data-tab="prices" data-role="manager">Ceny</button>
+            <button type="button" class="panel-tab" data-tab="summary" data-role="manager">Podsumowanie</button>
+        </nav>
+
+        <section id="view-orders" class="panel-view" aria-labelledby="orders-title">
+            <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                <h1 id="orders-title" class="panel-title">Zamówienia</h1>
+                <span id="orders-updated" class="small text-secondary"></span>
+            </div>
+            <div id="order-filters" class="filter-bar" role="group" aria-label="Filtr statusu"></div>
+            <div id="order-list" class="order-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="view-products" class="panel-view" aria-labelledby="products-title" hidden>
+            <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                <h1 id="products-title" class="panel-title">Produkty</h1>
+                <button id="btn-add-product" type="button" class="btn btn-acai" data-role="manager">Dodaj produkt</button>
+            </div>
+            <p class="text-secondary">Wyłączony przełącznik = produkt chwilowo niedostępny (w konfiguratorze wyszarzony).</p>
+            <div id="product-form-box" data-role="manager"></div>
+            <div id="product-list"></div>
+        </section>
+
+        <section id="view-prices" class="panel-view" aria-labelledby="prices-title" data-role="manager" hidden>
+            <h1 id="prices-title" class="panel-title">Ceny</h1>
+            <p class="text-secondary">Cena zależy tylko od rozmiaru. Zmiana nie wpływa na złożone już zamówienia.</p>
+            <form id="prices-form" class="prices-form" novalidate></form>
+        </section>
+
+        <section id="view-summary" class="panel-view" aria-labelledby="summary-title" data-role="manager" hidden>
+            <h1 id="summary-title" class="panel-title">Podsumowanie sprzedaży</h1>
+            <form id="summary-form" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+                <div>
+                    <label for="summary-from" class="form-label small">Od</label>
+                    <input id="summary-from" type="date" class="form-control" required>
+                </div>
+                <div>
+                    <label for="summary-to" class="form-label small">Do</label>
+                    <input id="summary-to" type="date" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-outline-secondary">Pokaż</button>
+            </form>
+            <div id="summary-result" aria-live="polite"></div>
+        </section>
+    </section>
+</main>
+
+<script type="module" src="../assets/js/panel.js?v=2026-11-24"></script>
+</body>
+</html>
