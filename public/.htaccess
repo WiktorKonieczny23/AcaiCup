@@ -1,0 +1,27 @@
+# Podstawowe zabezpieczenia Apache dla katalogu public/ (zadanie 21, DevOps).
+
+# Ten katalog jest publiczny (plik .htaccess w katalogu projektu blokuje resztę – XAMPP).
+Require all granted
+
+# Nie pokazuj listy plików w katalogach bez index.
+Options -Indexes
+
+# Blokuj dostęp do plików ukrytych (.git, .env, .htaccess).
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Strony mogą ładować skrypty i style tylko z własnej domeny i CDN Bootstrapa / Google Fonts,
+    # a zdjęcia składników także z Unsplash i Pexels.
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://images.unsplash.com https://images.pexels.com; connect-src 'self'; frame-ancestors 'none'"
+
+    # Przeglądarka przy każdym wejściu sprawdza, czy strona, skrypty, style lub dane
+    # się nie zmieniły (inaczej po podmianie zdjęć pokazuje starą wersję z pamięci).
+    <FilesMatch "\.(html|js|json|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
