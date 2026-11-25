@@ -73,7 +73,7 @@ ACAI/
 2. **Nowa baza:** w phpMyAdmin utwórz bazę `acai_cup` (kodowanie `utf8mb4_unicode_ci`)
    i zaimportuj kolejno `database/schema.sql` oraz `database/seed.sql`.
    **Baza już istnieje (z etapu E1):** uruchom tylko brakujące migracje z `database/migrations/`
-   po kolei (001, 002, 003) – w phpMyAdmin: baza `acai_cup` → zakładka SQL / Import.
+   po kolei (001, 002, 003, 004) – w phpMyAdmin: baza `acai_cup` → zakładka SQL / Import.
 3. `config/config.php` z użytkownikiem `root` i pustym hasłem (szablon: `config/config.example.php`).
 4. Otwórz:
    - konfigurator: <http://localhost/ACAI/public/>
@@ -152,6 +152,9 @@ oraz `scripts/restore-test.sh`, który sprawdza, że kopia się przywraca. Instr
 - Rozmiary: S (2 warstwy + 1 topping), M (3 + 1), L (4 + 2). Ceny 19 / 24 / 29 zł są **przykładowe** (zmienia je kierownik).
 - Kategorie warstw od dna: baza acai → zboża i granola → owoce → krem.
 - Extra białko: 20 g białka serwatkowego za 4 zł.
+- Dodatkowe toppingi: w każdym rozmiarze można dobrać do 3 toppingów ponad te w cenie, po 5 zł za każdy
+  (cenę zmienia kierownik, `extras.code = 'extra_topping'`).
+- Podwójna porcja: w L jeden topping można wybrać dwa razy (np. `"toppings": [24, 24]`).
 - Kiwi jest celowo oznaczone jako niedostępne, żeby było widać wyszarzanie.
 - Produktów nie usuwamy: `is_available` (chwilowy brak) i `is_active` (ukrycie na stałe).
 - **Wartości odżywcze są przybliżone** – przed oddaniem zastąpcie je danymi z etykiet.
