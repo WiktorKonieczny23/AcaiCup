@@ -49,7 +49,8 @@ const state = {
     menu: null,          // dane z API lub mocka
     sizeCode: null,      // 'S' | 'M' | 'L'
     layers: {},          // numer warstwy → id produktu
-    toppings: [],        // id produktów (kolejność wyboru)
+    toppings: [],        // id produktów (kolejność wyboru); w L jeden może wystąpić 2× (podwójna porcja)
+    extraToppings: 0,    // ile płatnych miejsc na toppingi ponad te wliczone w rozmiar
     protein: false,
     payment: 'cash',     // 'cash' | 'online'
     step: 0,             // indeks w STEPS
@@ -116,6 +117,52 @@ function selectedItems() {
     return items;
 }
 
+/** Dodatkowe toppingi: { price, max, available } albo null, gdy menu ich nie oferuje. */
+function extraToppingInfo() {
+    const info = state.menu.extra_topping;
+    return info && info.available ? info : null;
+}
+
+/** Ile toppingów mieści się w kubku: wliczone w rozmiar + dokupione miejsca. */
+function toppingCapacity() {
+    const size = currentSize();
+    return size ? size.toppings + state.extraToppings : 0;
+}
+
+/** Ile razy topping jest w kubku (0, 1 albo 2 – podwójna porcja). */
+function toppingCount(id) {
+    return state.toppings.filter((t) => t === id).length;
+}
+
+/** Id toppingu z podwójną porcją albo null. */
+function doubledTopping() {
+    return state.toppings.find((id, index) => state.toppings.indexOf(id) !== index) ?? null;
+}
+
+/** Czy w tym rozmiarze można zamówić podwójną porcję toppingu (L). */
+function canDouble() {
+    return Boolean(currentSize()?.double_topping);
+}
+
+/** Dopłata za dodatkowe toppingi (wybrane ponad te wliczone w rozmiar). */
+function extraToppingsCost() {
+    const size = currentSize();
+    const info = state.menu.extra_topping;
+    if (!size || !info) return 0;
+    return Math.max(0, state.toppings.length - size.toppings) * info.price;
+}
+
+/** Toppingi do wyświetlenia: „Banan ×2, Granola”. */
+function toppingNames(ids, nameOf) {
+    const names = [];
+    ids.forEach((id) => {
+        if (names.some((row) => row.id === id)) return;
+        const count = ids.filter((x) => x === id).length;
+        names.push({ id, text: count > 1 ? `${nameOf(id)} ×${count} (podwójna porcja)` : nameOf(id) });
+    });
+    return names.map((row) => row.text).join(', ');
+}
+
 function totals() {
     const size = currentSize();
     const extra = state.menu.extra_protein;
@@ -128,7 +175,7 @@ function totals() {
     }));
 
     return {
-        price: size ? size.price + (state.protein && extra ? extra.price : 0) : null,
+        price: size ? size.price + extraToppingsCost() + (state.protein && extra ? extra.price : 0) : null,
         kcal: sum('kcal'),
         protein: sum('protein_g'),
         carbs: sum('carbs_g'),
@@ -147,11 +194,14 @@ function stepError(stepId) {
             const missing = activeLayerCategories().filter((c) => !state.layers[c.position]);
             return missing.length ? `Wybierz składnik dla: ${missing.map((c) => c.name).join(', ')}.` : null;
         }
-        case 'toppings':
+        case 'toppings': {
             if (!size) return 'Wybierz rozmiar kubka.';
-            return state.toppings.length === size.toppings
-                ? null
-                : `Wybierz ${plural(size.toppings, 'topping', 'różne toppingi', 'różnych toppingów')}.`;
+            const missing = toppingCapacity() - state.toppings.length;
+            if (missing <= 0) return null;
+            return state.extraToppings > 0
+                ? `Wybierz jeszcze ${plural(missing, 'topping', 'toppingi', 'toppingów')} albo zmniejsz liczbę dodatkowych.`
+                : `Wybierz ${plural(size.toppings, 'topping', 'toppingi', 'toppingów')}.`;
+        }
         default:
             return null;
     }
@@ -168,7 +218,8 @@ function chooseSize(code) {
     for (const position of Object.keys(state.layers)) {
         if (Number(position) > size.layers) delete state.layers[position];
     }
-    state.toppings = state.toppings.slice(0, size.toppings);
+    if (!size.double_topping) state.toppings = [...new Set(state.toppings)]; // podwójna porcja tylko w L
+    state.toppings = state.toppings.slice(0, toppingCapacity());
     render();
 }
 
@@ -178,19 +229,49 @@ function chooseLayer(position, productId) {
 }
 
 function toggleTopping(productId) {
-    const max = currentSize().toppings;
-    const index = state.toppings.indexOf(productId);
+    const max = toppingCapacity();
 
-    if (index >= 0) {
-        state.toppings.splice(index, 1);          // odznaczenie
+    if (state.toppings.includes(productId)) {
+        state.toppings = state.toppings.filter((id) => id !== productId); // odznaczenie (także podwójnej porcji)
     } else if (max === 1) {
         state.toppings = [productId];             // jeden topping: zamiana
     } else if (state.toppings.length < max) {
         state.toppings.push(productId);
     } else {
-        $('step-error').textContent = `Możesz wybrać ${plural(max, 'topping', 'toppingi', 'toppingów')}. Odznacz jeden, żeby wybrać inny.`;
+        $('step-error').textContent = extraToppingInfo() && state.extraToppings < extraToppingInfo().max
+            ? 'Wszystkie miejsca są zajęte. Odznacz topping albo dodaj dodatkowy poniżej.'
+            : `Możesz wybrać ${plural(max, 'topping', 'toppingi', 'toppingów')}. Odznacz jeden, żeby wybrać inny.`;
         return;
     }
+    render();
+}
+
+/** Podwójna porcja (tylko L): ten sam topping zajmuje dwa miejsca. */
+function toggleDouble(productId) {
+    if (toppingCount(productId) > 1) {
+        state.toppings.splice(state.toppings.lastIndexOf(productId), 1); // wróć do pojedynczej porcji
+        render();
+        return;
+    }
+    const other = doubledTopping();
+    const toppings = [...state.toppings];
+    if (other !== null) toppings.splice(toppings.lastIndexOf(other), 1); // podwójna może być tylko jedna
+    if (toppings.length >= toppingCapacity()) {
+        $('step-error').textContent = 'Podwójna porcja zajmuje dwa miejsca. Odznacz inny topping albo dodaj dodatkowy.';
+        return;
+    }
+    toppings.splice(toppings.indexOf(productId) + 1, 0, productId);
+    state.toppings = toppings;
+    render();
+}
+
+/** Zmienia liczbę dokupionych miejsc na toppingi (+1 / −1). */
+function changeExtraToppings(delta) {
+    const info = extraToppingInfo();
+    if (!info) return;
+    state.extraToppings = Math.min(info.max, Math.max(0, state.extraToppings + delta));
+    // Mniej miejsc: usuwamy ostatnio wybrane toppingi, które się już nie mieszczą.
+    state.toppings = state.toppings.slice(0, toppingCapacity());
     render();
 }
 
@@ -308,6 +389,9 @@ function dropUnavailableChoices() {
         if (!ok(id)) delete state.layers[position];
     }
     state.toppings = state.toppings.filter(ok);
+    if (!extraToppingInfo()) state.extraToppings = 0;
+    state.extraToppings = Math.min(state.extraToppings, extraToppingInfo()?.max ?? 0);
+    if (currentSize()) state.toppings = state.toppings.slice(0, toppingCapacity());
     if (state.protein && !state.menu.extra_protein?.available) state.protein = false;
 }
 
@@ -330,7 +414,7 @@ function startStatusRefresh() {
 /** „Złóż kolejne zamówienie” – czysty konfigurator od pierwszego kroku. */
 function resetOrder() {
     clearInterval(statusTimer);
-    Object.assign(state, { sizeCode: null, layers: {}, toppings: [], protein: false, payment: 'cash', step: 0, maxStep: 0, order: null });
+    Object.assign(state, { sizeCode: null, layers: {}, toppings: [], extraToppings: 0, protein: false, payment: 'cash', step: 0, maxStep: 0, order: null });
     render();
     $('step-title').focus();
 }
@@ -340,7 +424,8 @@ function resetOrder() {
 function saveDraft() {
     try {
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-            sizeCode: state.sizeCode, layers: state.layers, toppings: state.toppings, protein: state.protein,
+            sizeCode: state.sizeCode, layers: state.layers, toppings: state.toppings,
+            extraToppings: state.extraToppings, protein: state.protein,
         }));
     } catch { /* tryb prywatny / brak pamięci – klient po prostu wybierze od nowa */ }
 }
@@ -360,6 +445,7 @@ function restoreDraft() {
     state.sizeCode = draft.sizeCode;
     state.layers = draft.layers ?? {};
     state.toppings = Array.isArray(draft.toppings) ? draft.toppings : [];
+    state.extraToppings = Number.isInteger(draft.extraToppings) ? draft.extraToppings : 0;
     state.protein = Boolean(draft.protein);
     state.payment = 'cash';
     dropUnavailableChoices();
@@ -422,7 +508,8 @@ function viewSize() {
             selected: size.code === state.sizeCode,
             onClick: () => chooseSize(size.code),
             title: `${size.code} · ${size.name}`,
-            meta: `${plural(size.layers, 'warstwa', 'warstwy', 'warstw')} · ${plural(size.toppings, 'topping', 'toppingi', 'toppingów')}`,
+            meta: `${plural(size.layers, 'warstwa', 'warstwy', 'warstw')} · ${plural(size.toppings, 'topping', 'toppingi', 'toppingów')}`
+                + (size.double_topping ? ' · możliwa podwójna porcja' : ''),
             extra: money.format(size.price),
         })),
     )];
@@ -442,13 +529,70 @@ function viewLayers() {
 }
 
 function viewToppings() {
-    return h('div', { class: 'option-grid' },
-        state.menu.toppings.products.map((product) => productCard(
-            product,
-            state.toppings.includes(product.id),
-            () => toggleTopping(product.id),
-        )),
+    const size = currentSize();
+    const info = extraToppingInfo();
+    const used = state.toppings.length;
+    const capacity = toppingCapacity();
+
+    const grid = h('div', { class: 'option-grid' },
+        state.menu.toppings.products.map((product) => {
+            const card = productCard(product, state.toppings.includes(product.id), () => toggleTopping(product.id));
+            const count = toppingCount(product.id);
+            if (count > 1) card.querySelector('.option-title').append(h('span', { class: 'qty-badge' }, '×2'));
+            return card;
+        }),
     );
+
+    // Licznik: ile miejsc zajętych i ile kosztują dodatkowe.
+    const status = h('p', { class: 'topping-status mb-0' },
+        h('strong', {}, `${used} / ${capacity}`), ' ',
+        `wybranych · ${plural(size.toppings, 'topping', 'toppingi', 'toppingów')} w cenie`,
+        state.extraToppings ? ` + ${state.extraToppings} dodatkowe (${money.format(state.extraToppings * info.price)})` : '',
+    );
+
+    const panels = [status];
+
+    // Dodatkowe toppingi: dostępne w każdym rozmiarze.
+    if (info) {
+        panels.push(h('div', { class: 'extra-toppings' },
+            h('div', {},
+                h('div', { class: 'fw-semibold' }, 'Dodatkowe toppingi'),
+                h('div', { class: 'small text-secondary' }, `+${money.format(info.price)} za każdy, najwyżej ${info.max}`),
+            ),
+            h('div', { class: 'qty-control', role: 'group', 'aria-label': 'Liczba dodatkowych toppingów' },
+                h('button', {
+                    type: 'button', class: 'btn btn-outline-secondary btn-sm', 'aria-label': 'Usuń dodatkowy topping',
+                    disabled: state.extraToppings === 0, onClick: () => changeExtraToppings(-1),
+                }, '−'),
+                h('span', { class: 'qty-value', 'aria-live': 'polite' }, String(state.extraToppings)),
+                h('button', {
+                    type: 'button', class: 'btn btn-outline-secondary btn-sm', 'aria-label': 'Dodaj dodatkowy topping',
+                    disabled: state.extraToppings >= info.max, onClick: () => changeExtraToppings(1),
+                }, '+'),
+            ),
+        ));
+    }
+
+    // Podwójna porcja: tylko w L, dla jednego z wybranych toppingów.
+    if (canDouble()) {
+        const chosen = [...new Set(state.toppings)];
+        const doubled = doubledTopping();
+        panels.push(h('div', { class: 'double-topping' },
+            h('div', { class: 'fw-semibold' }, 'Podwójna porcja jednego toppingu'),
+            h('div', { class: 'small text-secondary mb-2' },
+                'W dużym kubku możesz wybrać jeden topping podwójnie – zajmie dwa miejsca zamiast dwóch różnych.'),
+            chosen.length
+                ? h('div', { class: 'd-flex flex-wrap gap-2' }, chosen.map((id) => h('button', {
+                    type: 'button',
+                    class: `btn btn-sm ${doubled === id ? 'btn-acai' : 'btn-outline-secondary'}`,
+                    'aria-pressed': doubled === id ? 'true' : 'false',
+                    onClick: () => toggleDouble(id),
+                }, `${products.get(id).name} ×2`)))
+                : h('div', { class: 'small text-secondary' }, 'Najpierw wybierz topping z listy powyżej.'),
+        ));
+    }
+
+    return [grid, h('div', { class: 'topping-options' }, ...panels)];
 }
 
 function viewProtein() {
@@ -480,7 +624,9 @@ function viewSummary() {
     activeLayerCategories().forEach((category) => {
         rows.push([`Warstwa ${category.position} (${category.name.toLowerCase()})`, products.get(state.layers[category.position]).name]);
     });
-    rows.push(['Toppingi', state.toppings.map((id) => products.get(id).name).join(', ')]);
+    rows.push(['Toppingi', toppingNames(state.toppings, (id) => products.get(id).name)]);
+    const paid = state.toppings.length - size.toppings;
+    if (paid > 0) rows.push(['Dodatkowe toppingi', `${paid} × ${money.format(state.menu.extra_topping.price)} = ${money.format(extraToppingsCost())}`]);
     rows.push(['Extra białko', state.protein ? `tak, ${state.menu.extra_protein.portion_g} g` : 'nie']);
 
     const payment = (value, title, meta) => optionCard({
@@ -506,10 +652,11 @@ function viewSummary() {
 function viewConfirmation() {
     const order = state.order;
     const rows = [['Rozmiar', order.size]];
-    order.items.forEach((item) => {
-        const label = item.slot.startsWith('layer_') ? `Warstwa ${item.slot.slice(6)}` : 'Topping';
-        rows.push([label, item.name]);
-    });
+    order.items.filter((item) => item.slot.startsWith('layer_'))
+        .forEach((item) => rows.push([`Warstwa ${item.slot.slice(6)}`, item.name]));
+    const toppings = order.items.filter((item) => item.slot.startsWith('topping_')).map((item) => item.name);
+    rows.push(['Toppingi', toppingNames(toppings, (name) => name)]);
+    if (order.extra_toppings > 0) rows.push(['Dodatkowe toppingi', String(order.extra_toppings)]);
     rows.push(['Extra białko', order.extra_protein ? 'tak' : 'nie']);
 
     return [
@@ -542,9 +689,13 @@ const VIEWS = { size: viewSize, layers: viewLayers, toppings: viewToppings, prot
 function hintFor(stepId) {
     const size = currentSize();
     switch (stepId) {
-        case 'size': return 'Rozmiar decyduje o liczbie warstw i toppingów. Cena zależy tylko od rozmiaru.';
+        case 'size': return 'Rozmiar decyduje o liczbie warstw i toppingów w cenie. Dopłacasz tylko za dodatki.';
         case 'layers': return 'Każda warstwa ma własną kategorię. Liczymy od dna kubka.';
-        case 'toppings': return size.toppings === 1 ? 'Wybierz jeden topping.' : `Wybierz ${size.toppings} różne toppingi.`;
+        case 'toppings': {
+            const base = size.toppings === 1 ? 'W cenie jest jeden topping.' : `W cenie są ${size.toppings} toppingi.`;
+            const more = extraToppingInfo() ? ` Kolejne możesz dodać za ${money.format(state.menu.extra_topping.price)} każdy.` : '';
+            return base + more;
+        }
         case 'protein': {
             const extra = state.menu.extra_protein;
             return extra ? `Opcjonalnie: ${extra.portion_g} g białka serwatkowego za ${money.format(extra.price)}.` : '';
@@ -629,22 +780,6 @@ function render() {
     renderPreview();
 }
 
-/** Lista autorów zdjęć w stopce (licencje Unsplash i Pexels nie wymagają podpisu, ale go doceniają). */
-function renderCredits() {
-    const items = [
-        ['Zdjęcie główne', HERO],
-        ...[...products.values()].map((p) => [p.name, p.image]),
-        state.menu.extra_protein ? [state.menu.extra_protein.name, state.menu.extra_protein.image] : null,
-    ].filter((row) => row && row[1] && row[1].author);
-
-    $('credits-list').replaceChildren(...items.map(([name, image]) => {
-        const site = image.source?.includes('pexels.com') ? 'Pexels' : 'Unsplash';
-        const link = h('a', { href: image.source, target: '_blank', rel: 'noopener' }, `${image.author} / ${site}`);
-        return h('li', {}, `${name}: `, link);
-    }));
-    $('credits').hidden = items.length === 0;
-}
-
 /* ------------------------------------------------------------------ */
 /* Start                                                               */
 /* ------------------------------------------------------------------ */
@@ -659,7 +794,6 @@ async function init() {
         useMenu(data);
         $('data-source').hidden = source !== 'mock';
         restoreDraft();
-        renderCredits();
         render();
     } catch (error) {
         console.error(error);

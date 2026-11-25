@@ -17,7 +17,7 @@
  */
 
 import { apiRequest, ApiError } from './api.js';
-import { h, money } from './dom.js';
+import { h, money, plural } from './dom.js';
 
 const API = '../api/admin/';
 const ORDERS_REFRESH_MS = 20000;
@@ -42,7 +42,22 @@ const ORDER_FILTERS = [
     ['all', 'Wszystkie'],
 ];
 
-const SLOT_LABELS = { layer_1: 'Warstwa 1', layer_2: 'Warstwa 2', layer_3: 'Warstwa 3', layer_4: 'Warstwa 4', topping_1: 'Topping', topping_2: 'Topping' };
+const SLOT_LABELS = { layer_1: 'Warstwa 1', layer_2: 'Warstwa 2', layer_3: 'Warstwa 3', layer_4: 'Warstwa 4' };
+
+/**
+ * Pozycje zamówienia do wyświetlenia: warstwy po kolei, a toppingi zgrupowane,
+ * żeby podwójna porcja była widoczna jako „Banan ×2”.
+ */
+function orderLines(items) {
+    const lines = items.filter((item) => item.slot.startsWith('layer_'))
+        .map((item) => ({ label: SLOT_LABELS[item.slot], name: item.name, double: false }));
+    const toppings = items.filter((item) => item.slot.startsWith('topping_')).map((item) => item.name);
+    [...new Set(toppings)].forEach((name) => {
+        const count = toppings.filter((t) => t === name).length;
+        lines.push({ label: 'Topping', name: count > 1 ? `${name} ×${count}` : name, double: count > 1 });
+    });
+    return lines;
+}
 
 const state = {
     user: null,          // { login, role }
@@ -219,7 +234,11 @@ function renderOrders(orders) {
             h('span', { class: 'order-status', 'data-status': order.status }, order.status_label),
         ),
         h('ul', { class: 'order-items' },
-            order.items.map((item) => h('li', {}, h('span', { class: 'text-secondary' }, `${SLOT_LABELS[item.slot]}: `), item.name)),
+            orderLines(order.items).map((line) => h('li', { class: line.double ? 'fw-semibold' : null },
+                h('span', { class: 'text-secondary' }, `${line.label}: `), line.name)),
+            order.extra_toppings > 0
+                ? h('li', { class: 'small text-secondary' }, `w tym ${plural(order.extra_toppings, 'dodatkowy topping', 'dodatkowe toppingi', 'dodatkowych toppingów')} (płatne)`)
+                : null,
             order.extra_protein ? h('li', { class: 'fw-semibold' }, '+ białko serwatkowe') : null,
         ),
         h('div', { class: 'd-flex justify-content-between align-items-baseline mb-2' },
@@ -460,6 +479,7 @@ function renderPrices(data) {
         ...data.sizes.map((size) => priceInput(`price-${size.code}`, `${size.code} · ${size.name}`, size.price,
             `${size.layers} warstwy/warstw + ${size.toppings} topping(i)`)),
         data.protein ? priceInput('price-protein', `Dopłata: ${data.protein.name.toLowerCase()}`, data.protein.price, `${data.protein.portion_g} g`) : null,
+        data.extra_topping ? priceInput('price-extra-topping', 'Dodatkowy topping', data.extra_topping.price, 'za każdy topping ponad te w cenie rozmiaru') : null,
         h('p', { id: 'prices-error', class: 'text-danger small', role: 'alert' }),
         h('button', { type: 'submit', class: 'btn btn-acai' }, 'Zapisz ceny'),
     );
@@ -475,8 +495,9 @@ async function savePrices(event) {
     }
     const body = { sizes };
     if ($('price-protein')) body.protein = Number($('price-protein').value);
+    if ($('price-extra-topping')) body.extra_topping = Number($('price-extra-topping').value);
 
-    const all = [...Object.values(sizes), body.protein ?? 1];
+    const all = [...Object.values(sizes), body.protein ?? 1, body.extra_topping ?? 1];
     if (all.some((v) => !(v > 0 && v < 1000))) {
         $('prices-error').textContent = 'Każda cena musi być kwotą od 0,01 do 999,99 zł.';
         return;

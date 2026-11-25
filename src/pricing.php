@@ -11,9 +11,12 @@
  *  - S = 2 warstwy + 1 topping, M = 3 + 1, L = 4 + 2 (dane z tabeli sizes),
  *  - warstwa N musi być produktem z kategorii o position = N
  *    (1 baza acai, 2 zboża/granola, 3 owoce, 4 krem),
- *  - składnik nie może się powtórzyć (w L: dwa RÓŻNE toppingi),
+ *  - toppingi wliczone w cenę muszą być wybrane wszystkie; ponad nie można dobrać
+ *    do MAX_EXTRA_TOPPINGS dodatkowych, każdy za cenę z extras.code = 'extra_topping',
+ *  - topping może się powtórzyć tylko w rozmiarach z DOUBLE_TOPPING_SIZES (L)
+ *    i tylko jeden, najwyżej dwa razy („podwójna porcja”),
  *  - produkt musi być aktywny (is_active) i dostępny (is_available),
- *  - cena = cena rozmiaru + ewentualna dopłata za białko.
+ *  - cena = cena rozmiaru + dodatkowe toppingi + ewentualna dopłata za białko.
  *
  * Wywołuje: public/api/orders.php
  */
@@ -22,6 +25,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/errors.php';
 require_once __DIR__ . '/request.php';
+
+/** Ile płatnych toppingów można dobrać ponad te wliczone w rozmiar. */
+const MAX_EXTRA_TOPPINGS = 3;
+
+/** Rozmiary, w których jeden topping można wybrać podwójnie. */
+const DOUBLE_TOPPING_SIZES = ['L'];
 
 /**
  * Sprawdza konfigurację i liczy cenę.
@@ -56,27 +65,52 @@ function price_order(PDO $pdo, array $input): array
     }
 
     $toppings = $input['toppings'] ?? null;
-    if (!is_array($toppings) || !array_is_list($toppings) || count($toppings) !== $size['toppings_count']) {
+    $included = $size['toppings_count'];
+    if (!is_array($toppings) || !array_is_list($toppings)
+        || count($toppings) < $included || count($toppings) > $included + MAX_EXTRA_TOPPINGS) {
         throw new AppError(
             'INVALID_TOPPINGS',
-            $size['toppings_count'] === 1 ? 'Wybierz jeden topping.' : "Wybierz {$size['toppings_count']} różne toppingi."
+            sprintf(
+                'Rozmiar %s ma %s w cenie i można dobrać najwyżej %d dodatkowe.',
+                $size['code'],
+                $included === 1 ? '1 topping' : "{$included} toppingi",
+                MAX_EXTRA_TOPPINGS
+            )
         );
     }
+    $toppingIds = [];
     foreach ($toppings as $index => $value) {
         $id = positive_int($value);
         if ($id === null) {
             throw new AppError('INVALID_TOPPINGS', 'Niepoprawny topping.');
         }
+        $toppingIds[] = $id;
         $wanted['topping_' . ($index + 1)] = $id;
     }
 
-    // Składnik nie może się powtórzyć (to samo pilnuje UNIQUE w order_items).
-    if (count(array_unique($wanted)) !== count($wanted)) {
-        throw new AppError('DUPLICATE_PRODUCT', 'Każdy składnik może wystąpić w kubku tylko raz. Toppingi muszą być różne.');
+    // Powtórzenia: tylko w L, tylko jeden topping i najwyżej dwa razy (podwójna porcja).
+    $repeats = array_filter(array_count_values($toppingIds), fn ($n) => $n > 1);
+    if ($repeats) {
+        $allowed = in_array($size['code'], DOUBLE_TOPPING_SIZES, true) && count($repeats) === 1 && max($repeats) === 2;
+        if (!$allowed) {
+            throw new AppError(
+                'DUPLICATE_PRODUCT',
+                in_array($size['code'], DOUBLE_TOPPING_SIZES, true)
+                    ? 'Podwójną porcję można wybrać tylko dla jednego toppingu.'
+                    : 'Podwójna porcja toppingu jest dostępna tylko w dużym kubku (L).'
+            );
+        }
+    }
+
+    // Warstwy: każda z innej kategorii, więc składnik się w nich nie powtórzy;
+    // na wszelki wypadek sprawdzamy też, że topping nie trafił do warstwy.
+    $layerIds = array_slice(array_values($wanted), 0, $size['layers_count']);
+    if (count(array_unique($layerIds)) !== count($layerIds) || array_intersect($layerIds, $toppingIds)) {
+        throw new AppError('DUPLICATE_PRODUCT', 'Każdy składnik warstwy może wystąpić w kubku tylko raz.');
     }
 
     // 2. Pobieramy wszystkie te produkty z bazy jednym zapytaniem ----------
-    $products = load_products($pdo, array_values($wanted));
+    $products = load_products($pdo, array_values(array_unique($wanted)));
 
     $items = [];
     foreach ($wanted as $slot => $id) {
@@ -116,9 +150,14 @@ function price_order(PDO $pdo, array $input): array
     }
     $extra = $wantsProtein ? load_protein($pdo) : null;
 
+    // 3b. Dodatkowe (płatne) toppingi ponad te wliczone w rozmiar -------------
+    $extraToppings = count($toppingIds) - $included;
+    $extraToppingPrice = $extraToppings > 0 ? load_extra_topping_price($pdo) : 0.0;
+
     // 4. Cena: liczymy w groszach (liczby całkowite), żeby uniknąć błędów zaokrągleń
-    $sizeGrosze    = (int) round((float) $size['price'] * 100);
-    $proteinGrosze = $extra ? (int) round((float) $extra['price'] * 100) : 0;
+    $sizeGrosze     = (int) round((float) $size['price'] * 100);
+    $proteinGrosze  = $extra ? (int) round((float) $extra['price'] * 100) : 0;
+    $toppingsGrosze = $extraToppings * (int) round($extraToppingPrice * 100);
 
     // 5. Wartości odżywcze i alergeny (tak jak w podglądzie na stronie) ------
     $nutritionRows = $items;
@@ -138,11 +177,14 @@ function price_order(PDO $pdo, array $input): array
         ],
         'items'         => $items,
         'extra'         => $extra ? ['id' => (int) $extra['id'], 'name' => $extra['name'], 'portion_g' => (int) $extra['portion_g']] : null,
-        'size_price'    => $sizeGrosze / 100.0,
-        'protein_price' => $proteinGrosze / 100.0,
-        'total_price'   => ($sizeGrosze + $proteinGrosze) / 100.0, // 100.0, żeby zawsze była liczba z groszami (28.0, nie 28)
-        'nutrition'     => $nutrition,
-        'allergens'     => load_allergens($pdo, array_column($items, 'product_id'), $extra ? (int) $extra['id'] : null),
+        'size_price'           => $sizeGrosze / 100.0,
+        'protein_price'        => $proteinGrosze / 100.0,
+        'extra_toppings'       => $extraToppings,
+        'extra_toppings_price' => $toppingsGrosze / 100.0,
+        // 100.0, żeby zawsze była liczba z groszami (28.0, nie 28)
+        'total_price'          => ($sizeGrosze + $toppingsGrosze + $proteinGrosze) / 100.0,
+        'nutrition'            => $nutrition,
+        'allergens'            => load_allergens($pdo, array_values(array_unique(array_column($items, 'product_id'))), $extra ? (int) $extra['id'] : null),
     ];
 }
 
@@ -207,6 +249,18 @@ function load_protein(PDO $pdo): array
         throw new AppError('EXTRA_UNAVAILABLE', 'Dodatkowe białko jest chwilowo niedostępne.', 409);
     }
     return $extra;
+}
+
+/** Cena jednego dodatkowego toppingu; przerywa, gdy dobieranie jest wyłączone. */
+function load_extra_topping_price(PDO $pdo): float
+{
+    $stmt = $pdo->prepare('SELECT price, is_available FROM extras WHERE code = ?');
+    $stmt->execute(['extra_topping']);
+    $row = $stmt->fetch();
+    if (!$row || !$row['is_available']) {
+        throw new AppError('EXTRA_UNAVAILABLE', 'Dodatkowe toppingi są chwilowo niedostępne.', 409);
+    }
+    return (float) $row['price'];
 }
 
 /** Nazwy alergenów wybranych produktów i białka, bez powtórzeń. */

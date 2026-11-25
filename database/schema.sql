@@ -152,6 +152,8 @@ CREATE TABLE orders (
     size_price       DECIMAL(6,2)     NOT NULL,
     extra_protein    BOOLEAN          NOT NULL DEFAULT FALSE,
     protein_price    DECIMAL(6,2)     NOT NULL DEFAULT 0,
+    extra_toppings        TINYINT UNSIGNED NOT NULL DEFAULT 0,   -- płatne toppingi ponad te w rozmiarze
+    extra_toppings_price  DECIMAL(6,2)     NOT NULL DEFAULT 0,   -- łączna dopłata za nie
     total_price      DECIMAL(7,2)     NOT NULL,
     payment_method   ENUM('cash', 'online')                              NOT NULL DEFAULT 'cash',
     payment_status   ENUM('pending', 'paid', 'failed')                   NOT NULL DEFAULT 'pending',
@@ -160,23 +162,24 @@ CREATE TABLE orders (
     updated_at       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_orders_code UNIQUE (order_code),
     CONSTRAINT fk_orders_size FOREIGN KEY (size_id) REFERENCES sizes (id) ON DELETE RESTRICT,
-    CONSTRAINT chk_orders_prices CHECK (size_price >= 0 AND protein_price >= 0 AND total_price >= 0),
+    CONSTRAINT chk_orders_prices CHECK (size_price >= 0 AND protein_price >= 0 AND extra_toppings_price >= 0 AND total_price >= 0),
     INDEX idx_orders_status_created (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Jeden wiersz = jeden składnik w konkretnym miejscu kubka.
--- UNIQUE(order_id, product_id) pilnuje, że składnik się nie powtarza
--- (w tym dwa różne toppingi w rozmiarze L).
+-- topping_1…topping_5: 2 toppingi w cenie (L) + do 3 dodatkowych.
+-- Ten sam produkt może wystąpić dwa razy (podwójna porcja toppingu w L) –
+-- zasady pilnuje src/pricing.php.
 CREATE TABLE order_items (
     id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id      INT UNSIGNED      NOT NULL,
     product_id    SMALLINT UNSIGNED NOT NULL,
     product_name  VARCHAR(60)       NOT NULL,
-    slot          ENUM('layer_1', 'layer_2', 'layer_3', 'layer_4', 'topping_1', 'topping_2') NOT NULL,
+    slot          ENUM('layer_1', 'layer_2', 'layer_3', 'layer_4',
+                       'topping_1', 'topping_2', 'topping_3', 'topping_4', 'topping_5') NOT NULL,
     CONSTRAINT fk_items_order   FOREIGN KEY (order_id)   REFERENCES orders (id)   ON DELETE CASCADE,
     CONSTRAINT fk_items_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT,
-    CONSTRAINT uq_items_slot    UNIQUE (order_id, slot),
-    CONSTRAINT uq_items_product UNIQUE (order_id, product_id)
+    CONSTRAINT uq_items_slot    UNIQUE (order_id, slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Historia statusów: kto i kiedy zmienił status zamówienia.

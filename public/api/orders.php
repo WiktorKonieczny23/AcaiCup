@@ -6,6 +6,9 @@
  *   {"size": "M", "layers": {"1": 3, "2": 11, "3": 17}, "toppings": [24],
  *    "extra_protein": true, "payment_method": "cash"}
  *
+ * "toppings" może mieć więcej pozycji niż rozmiar ma w cenie (każda kolejna jest płatna),
+ * a w L jeden topping może wystąpić dwa razy (podwójna porcja), np. [24, 24].
+ *
  * Kolejność:
  *  1. price_order()      – walidacja składu i cena liczona z bazy (src/pricing.php),
  *  2. payment_gateway()  – czy wybrana płatność jest dostępna (src/payments/),
@@ -54,6 +57,7 @@ json_ok([
     'size'           => $priced['size']['code'],
     'items'          => array_map(fn ($item) => ['slot' => $item['slot'], 'name' => $item['name']], $priced['items']),
     'extra_protein'  => $priced['extra'] !== null,
+    'extra_toppings' => $priced['extra_toppings'],
     'nutrition'      => $priced['nutrition'],
     'allergens'      => $priced['allergens'],
 ], 201);

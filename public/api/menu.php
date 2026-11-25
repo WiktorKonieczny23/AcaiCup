@@ -16,6 +16,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/../../src/bootstrap.php';
+require_once __DIR__ . '/../../src/pricing.php';
 
 require_method('GET');
 
@@ -57,6 +58,8 @@ foreach ($rows as $row) {
         'layers'   => (int) $row['layers_count'],
         'toppings' => (int) $row['toppings_count'],
         'price'    => (float) $row['price'],
+        // Czy jeden topping można wybrać podwójnie (src/pricing.php, DOUBLE_TOPPING_SIZES).
+        'double_topping' => in_array($row['code'], DOUBLE_TOPPING_SIZES, true),
     ];
 }
 
@@ -160,10 +163,21 @@ $extraProtein = $extra ? [
     'available' => (bool) $extra['is_available'],
 ] : null;
 
+// 5. Dodatkowe toppingi (płatne, ponad te wliczone w rozmiar) ------------
+$stmt = $pdo->prepare('SELECT price, is_available FROM extras WHERE code = ?');
+$stmt->execute(['extra_topping']);
+$row = $stmt->fetch();
+$extraTopping = $row ? [
+    'price'     => (float) $row['price'],
+    'max'       => MAX_EXTRA_TOPPINGS,
+    'available' => (bool) $row['is_available'],
+] : null;
+
 json_ok([
     'currency'      => 'PLN',
     'sizes'         => $sizes,
     'layers'        => array_values($layers),
     'toppings'      => $toppings,
     'extra_protein' => $extraProtein,
+    'extra_topping' => $extraTopping,
 ]);

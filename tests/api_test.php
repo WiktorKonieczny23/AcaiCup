@@ -225,10 +225,46 @@ scenario('K6', 'walidacja', 'Owoc jako warstwa 1 (zła kategoria)', '400 PRODUCT
     return is_error($guest->post('/api/orders.php', $body), 400, 'PRODUCT_WRONG_CATEGORY');
 });
 
-scenario('K7', 'walidacja', 'Rozmiar L z dwoma takimi samymi toppingami', '400 DUPLICATE_PRODUCT', function () use ($guest, $validOrder) {
-    $body = $validOrder('L');
+scenario('K7', 'walidacja', 'Podwójna porcja toppingu w M (tylko L może)', '400 DUPLICATE_PRODUCT', function () use ($guest, $validOrder) {
+    $body = $validOrder('M');
     $body['toppings'] = [$body['toppings'][0], $body['toppings'][0]];
     return is_error($guest->post('/api/orders.php', $body), 400, 'DUPLICATE_PRODUCT');
+});
+
+scenario('K7a', 'klient', 'L z podwójną porcją jednego toppingu', '201, cena = sam rozmiar L', function () use ($guest, $validOrder, $sizes, &$createdOrders) {
+    $body = $validOrder('L');
+    $body['toppings'] = [$body['toppings'][0], $body['toppings'][0]];
+    $response = $guest->post('/api/orders.php', $body);
+    $data = $response[1]['data'] ?? null;
+    if ($data) $createdOrders[] = $data['order_code'];
+    $toppings = array_filter($data['items'] ?? [], fn ($i) => str_starts_with($i['slot'], 'topping_'));
+    $ok = $response[0] === 201 && abs($data['total_price'] - $sizes['L']['price']) < 0.001 && count($toppings) === 2;
+    return [$ok, described($response) . ', ' . ($data['total_price'] ?? '?') . ' zł'];
+});
+
+scenario('K7b', 'walidacja', 'L z dwiema podwójnymi porcjami (2+2 dodatkowe)', '400 DUPLICATE_PRODUCT', function () use ($guest, $validOrder, $toppingChoice) {
+    $body = $validOrder('L');
+    $a = $toppingChoice[0]['id'];
+    $b = $toppingChoice[1]['id'];
+    $body['toppings'] = [$a, $a, $b, $b];
+    return is_error($guest->post('/api/orders.php', $body), 400, 'DUPLICATE_PRODUCT');
+});
+
+scenario('K7c', 'klient', 'S z 2 dodatkowymi toppingami', '201, cena = S + 2 × dodatkowy topping', function () use ($guest, $validOrder, $sizes, $menu, $toppingChoice, &$createdOrders) {
+    $body = $validOrder('S');
+    $body['toppings'] = array_map(fn ($t) => $t['id'], array_slice($toppingChoice, 0, 3));
+    $response = $guest->post('/api/orders.php', $body + ['extra_toppings_price' => 0]); // cena z przeglądarki ignorowana
+    $data = $response[1]['data'] ?? null;
+    if ($data) $createdOrders[] = $data['order_code'];
+    $expected = $sizes['S']['price'] + 2 * $menu['extra_topping']['price'];
+    $ok = $response[0] === 201 && abs($data['total_price'] - $expected) < 0.001 && ($data['extra_toppings'] ?? 0) === 2;
+    return [$ok, described($response) . ', ' . ($data['total_price'] ?? '?') . " zł (oczekiwane {$expected})"];
+});
+
+scenario('K7d', 'walidacja', 'M z 4 dodatkowymi toppingami (limit 3)', '400 INVALID_TOPPINGS', function () use ($guest, $validOrder, $toppingChoice) {
+    $body = $validOrder('M');
+    $body['toppings'] = array_map(fn ($t) => $t['id'], array_slice($toppingChoice, 0, 5));
+    return is_error($guest->post('/api/orders.php', $body), 400, 'INVALID_TOPPINGS');
 });
 
 scenario('K8', 'walidacja', 'Za mało toppingów w L (1 zamiast 2)', '400 INVALID_TOPPINGS', function () use ($guest, $validOrder) {

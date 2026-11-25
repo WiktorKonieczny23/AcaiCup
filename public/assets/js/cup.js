@@ -130,9 +130,7 @@ export function renderCup(svg, model) {
     const defs = el('defs');
     const clip = el('clipPath', { id: 'cup-clip' });
     clip.append(el('polygon', { points: outline }));
-    const rightHalf = el('clipPath', { id: 'mound-right' });
-    rightHalf.append(el('rect', { x: 120, y: 0, width: 120, height: 100 }));
-    defs.append(clip, rightHalf);
+    defs.append(clip);
     svg.append(defs);
 
     // Cień pod kubkiem (poza skalowaniem, żeby zawsze leżał na "stole").
@@ -178,19 +176,47 @@ export function renderCup(svg, model) {
     // Etykiety na końcu, żeby żadna warstwa ich nie zasłoniła.
     labels.forEach(([text, y, size]) => label(inside, text, 120, y, size));
 
-    // Toppingi: kopczyk nad rantem; przy dwóch toppingach prawa połowa ma drugi.
+    // Toppingi: kopczyk nad rantem podzielony na pionowe pasy, po jednym na topping.
+    // Podwójna porcja (ten sam topping dwa razy pod rząd) dostaje pas dwa razy szerszy.
     if (model.toppings.length) {
         const box = { x: MOUND.left, y: MOUND.peak - 2, width: MOUND.right - MOUND.left, height: MOUND.base - MOUND.peak + 4 };
         const toppingsGroup = el('g', { class: 'cup-toppings' });
-        model.toppings.forEach((topping, index) => {
-            const fill = texture(defs, `tex-topping-${index}`, topping, box);
-            const attrs = { d: MOUND_PATH, fill, class: 'cup-mound' };
-            if (index === 1) attrs['clip-path'] = 'url(#mound-right)';
-            toppingsGroup.append(el('path', attrs));
+
+        const segments = [];   // [{ topping, units }]
+        model.toppings.forEach((topping) => {
+            const last = segments[segments.length - 1];
+            if (last && last.topping === topping) last.units++;
+            else segments.push({ topping, units: 1 });
         });
-        if (model.toppings.length > 1) {
-            toppingsGroup.append(el('line', { x1: 120, y1: MOUND.peak, x2: 120, y2: MOUND.base, class: 'cup-mound-split' }));
-        }
+
+        // Linie podziału przycięte do kształtu kopczyka (przy brzegach jest niższy niż na środku).
+        const moundClip = el('clipPath', { id: 'mound-clip' });
+        moundClip.append(el('path', { d: MOUND_PATH }));
+        defs.append(moundClip);
+        const splits = el('g', { 'clip-path': 'url(#mound-clip)' });
+
+        const unit = box.width / model.toppings.length;
+        let x = MOUND.left;
+        segments.forEach((segment, index) => {
+            const width = unit * segment.units;
+            const fill = texture(defs, `tex-topping-${index}`, segment.topping, box);
+            const attrs = { d: MOUND_PATH, fill, class: 'cup-mound' };
+            if (segments.length > 1) {
+                const slice = el('clipPath', { id: `mound-slice-${index}` });
+                // Skrajne pasy sięgają poza kopczyk, żeby nie ucinać jego brzegów.
+                const left = index === 0 ? 0 : x;
+                const right = index === segments.length - 1 ? 240 : x + width;
+                slice.append(el('rect', { x: left, y: 0, width: right - left, height: 100 }));
+                defs.append(slice);
+                attrs['clip-path'] = `url(#mound-slice-${index})`;
+            }
+            toppingsGroup.append(el('path', attrs));
+            x += width;
+            if (index < segments.length - 1) {
+                splits.append(el('line', { x1: x, y1: MOUND.peak - 4, x2: x, y2: MOUND.base, class: 'cup-mound-split' }));
+            }
+        });
+        toppingsGroup.append(splits);
         group.append(toppingsGroup);
     }
 

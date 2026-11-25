@@ -89,7 +89,9 @@ INSERT INTO product_allergens (product_id, allergen_id) VALUES
 
 -- Extra białko: 20 g białka serwatkowego za 4 zł (ustalenie zespołu) ----
 INSERT INTO extras (id, code, name, price, portion_g, kcal, protein_g, carbs_g, fat_g) VALUES
-    (1, 'whey_protein', 'Białko serwatkowe', 4.00, 20, 78.0, 15.0, 1.5, 1.2);
+    (1, 'whey_protein', 'Białko serwatkowe', 4.00, 20, 78.0, 15.0, 1.5, 1.2),
+    -- dopłata za każdy topping ponad te wliczone w rozmiar (wartości odżywcze liczy sam topping)
+    (2, 'extra_topping', 'Dodatkowy topping', 5.00, 0, 0, 0, 0, 0);
 
 INSERT INTO extra_allergens (extra_id, allergen_id) VALUES
     (1, 7);                       -- białko serwatkowe: mleko

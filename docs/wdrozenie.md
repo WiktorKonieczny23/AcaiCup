@@ -231,6 +231,7 @@ Jeśli w `database/migrations/` pojawił się nowy plik, uruchamiacie go **raz**
 sudo mysql acai_cup < database/migrations/001_zdjecia_skladnikow.sql   # 03.11.2026: zdjęcia składników
 sudo mysql acai_cup < database/migrations/002_wlasne_zdjecia.sql       # 10.11.2026: własne zdjęcia
 sudo mysql acai_cup < database/migrations/003_panel_personelu.sql      # 24.11.2026: zamówienia i panel
+sudo mysql acai_cup < database/migrations/004_dodatkowe_toppingi.sql   # 25.11.2026: dodatkowe toppingi, podwójna porcja w L
 ```
 
 Na nowej instalacji migracje są niepotrzebne – `schema.sql` i `seed.sql` już je zawierają.

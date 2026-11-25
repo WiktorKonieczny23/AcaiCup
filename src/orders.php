@@ -58,8 +58,9 @@ function create_order(PDO $pdo, array $priced, string $paymentMethod): array
     try {
         // 1. Nagłówek zamówienia z KOPIĄ cen z chwili zakupu.
         $insertOrder = $pdo->prepare(
-            'INSERT INTO orders (order_code, size_id, size_price, extra_protein, protein_price, total_price, payment_method)
-             VALUES (?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO orders (order_code, size_id, size_price, extra_protein, protein_price,
+                                 extra_toppings, extra_toppings_price, total_price, payment_method)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
 
         // Wylosowany numer może już istnieć (UNIQUE w bazie) – wtedy losujemy jeszcze raz.
@@ -72,6 +73,8 @@ function create_order(PDO $pdo, array $priced, string $paymentMethod): array
                     $priced['size_price'],
                     $priced['extra'] ? 1 : 0,
                     $priced['protein_price'],
+                    $priced['extra_toppings'],
+                    $priced['extra_toppings_price'],
                     $priced['total_price'],
                     $paymentMethod,
                 ]);

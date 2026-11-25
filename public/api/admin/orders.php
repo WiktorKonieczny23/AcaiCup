@@ -38,7 +38,7 @@ $pdo = db();
 $placeholders = implode(', ', array_fill(0, count($statuses), '?'));
 $order = array_diff($statuses, $active) === [] ? 'ASC' : 'DESC'; // stała z kodu, nie od klienta
 $stmt = $pdo->prepare(
-    "SELECT o.id, o.order_code, s.code AS size, o.extra_protein, o.total_price,
+    "SELECT o.id, o.order_code, s.code AS size, o.extra_protein, o.extra_toppings, o.total_price,
             o.payment_method, o.payment_status, o.status, o.created_at, o.updated_at
        FROM orders o
        JOIN sizes s ON s.id = o.size_id
@@ -55,7 +55,7 @@ if ($orders) {
     $ids = array_column($orders, 'id');
     $placeholders = implode(', ', array_fill(0, count($ids), '?'));
     $stmt = $pdo->prepare(
-        "SELECT order_id, slot, product_name FROM order_items WHERE order_id IN ($placeholders) ORDER BY order_id, slot"
+        "SELECT order_id, slot, product_name FROM order_items WHERE order_id IN ($placeholders) ORDER BY order_id, id"
     );
     $stmt->execute($ids);
     foreach ($stmt->fetchAll() as $row) {
@@ -75,6 +75,7 @@ json_ok([
         'order_code'     => $o['order_code'],
         'size'           => $o['size'],
         'extra_protein'  => (bool) $o['extra_protein'],
+        'extra_toppings' => (int) $o['extra_toppings'],
         'total_price'    => (float) $o['total_price'],
         'payment_method' => $o['payment_method'],
         'payment_status' => $o['payment_status'],

@@ -8,21 +8,24 @@
                 "name": "Mały",
                 "layers": 2,
                 "toppings": 1,
-                "price": 19.0
+                "price": 19.0,
+                "double_topping": false
             },
             {
                 "code": "M",
                 "name": "Średni",
                 "layers": 3,
                 "toppings": 1,
-                "price": 24.0
+                "price": 24.0,
+                "double_topping": false
             },
             {
                 "code": "L",
                 "name": "Duży",
                 "layers": 4,
                 "toppings": 2,
-                "price": 29.0
+                "price": 29.0,
+                "double_topping": true
             }
         ],
         "layers": [
@@ -530,6 +533,11 @@
                 "author": "HowToGym",
                 "source": "https://unsplash.com/photos/S9NchuPb79I"
             },
+            "available": true
+        },
+        "extra_topping": {
+            "price": 5.0,
+            "max": 3,
             "available": true
         }
     }

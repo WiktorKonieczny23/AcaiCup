@@ -74,11 +74,10 @@ h1, h2, .brand, .price {
 }
 
 .brand-mark {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--lime);
-    box-shadow: inset 0 0 0 6px var(--forest);
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 /* Podgląd kubka – ciemna sekcja Forest Ink ------------------------------ */
@@ -298,23 +297,6 @@ h1, h2, .brand, .price {
     background: var(--mist);
 }
 
-/* Autorzy zdjęć w stopce */
-.credits summary {
-    cursor: pointer;
-    color: var(--forest);
-    font-weight: 600;
-}
-
-.credits ul {
-    columns: 2 16rem;
-    padding-left: 1.1rem;
-    margin: 0.5rem 0 0;
-}
-
-.credits a {
-    color: var(--forest);
-}
-
 .option-text {
     display: flex;
     flex-direction: column;
@@ -327,6 +309,69 @@ h1, h2, .brand, .price {
 
 .layer-group {
     margin-bottom: 1.5rem;
+}
+
+/* Toppingi: dodatkowe miejsca i podwójna porcja ---------------------------- */
+.qty-badge {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0 0.45rem;
+    border-radius: var(--radius-pill);
+    background: var(--lime);
+    color: var(--forest);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.topping-options {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.topping-status {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.topping-status strong { color: var(--forest); }
+
+.extra-toppings,
+.double-topping {
+    border: 1px solid var(--fog);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    color: var(--forest);
+}
+
+.extra-toppings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.qty-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.qty-control .btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.double-topping .btn { padding: 0.35rem 0.9rem; }
+
+.qty-value {
+    min-width: 1.25rem;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.1rem;
 }
 
 .layer-group legend {
